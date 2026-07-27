@@ -1,11 +1,15 @@
 <?php
 
-
+/**
+ * Plugin Name: Kawwwa - Cyfrowa Księga Gości
+ * Description: Moduł Premium dla stron ślubnych. Obsługa życzeń, wideo (Google Drive) i zdjęć.
+ * Version: 1.0.0
+ * Author: kawwwa.online
+ */
 
 if (! defined('ABSPATH')) {
     exit;
 }
-
 
 function kawwwa_register_guestbook_cpt()
 {
