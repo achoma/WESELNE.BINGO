@@ -1,27 +1,39 @@
+/**
+ * WESELNE BINGO - CORE ENGINE (Vanilla JS)
+ * Wersja: 1.0 (Snippet Library - gotowe do recyklingu)
+ * Architektura: SPA + LocalStorage + Asynchronous Webhook
+ */
+
 /* =========================================
-   1. KONFIGURACJA (Tylko to zmieniasz dla klientów)
+   1. KONFIGURACJA KLIENTA (Zmieniasz tylko to!)
    ========================================= */
 const CONFIG = {
+    // Adres Webhooka z Make.com (lub Zapier), który odbiera pliki i wrzuca na Google Drive
+    webhookUrl: "https://hook.eu1.make.com/TWOJ_ID_WEBHOOKA", 
+    
     bingoMessage: "Mamy bingo! Odbierz nagrodę u świadka przy barze!",
-    // Tutaj docelowo wklejasz 25 zadań. Zrobiłem 3 jako przykład.
+    
+    // Lista zadań (Docelowo 25. Uzupełnij dla konkretnej pary młodej)
     tasks: [
         { id: 1, title: 'Król Parkietu', desc: 'Wideo z solowego, epickiego popisu tanecznego (szalone obroty i skoki mile widziane!).' },
         { id: 2, title: 'Wzruszenie', desc: 'Uchwyć moment, gdy ktoś z gości ociera łzę wzruszenia.' },
-        { id: 3, title: 'Selfie z Teściową', desc: 'Zrób sobie uśmiechnięte zdjęcie z mamą panny młodej lub pana młodego.' }
+        { id: 3, title: 'Selfie z Teściową', desc: 'Zrób sobie uśmiechnięte zdjęcie z mamą panny młodej lub pana młodego.' },
+        // ... DEV HELP: Pętla poniżej automatycznie dobije do 25 na potrzeby testów.
+        // W produkcji usuń pętlę i wpisz tu fizycznie 25 obiektów.
     ]
 };
 
-// DEV HELP: Generujemy puste zadania do pełnych 25, żeby aplikacja działała do testów.
-// Przed oddaniem klientowi, upewnij się, że w tablicy wyżej jest dokładnie 25 obiektów i usuń tę pętlę.
+// DEV ONLY: Wypełniacz do pełnych 25 zadań
 while(CONFIG.tasks.length < 25) {
-    CONFIG.tasks.push({ id: CONFIG.tasks.length + 1, title: `Zadanie ${CONFIG.tasks.length + 1}`, desc: 'Opis zadania do wykonania...' });
+    CONFIG.tasks.push({ id: CONFIG.tasks.length + 1, title: `Zadanie ${CONFIG.tasks.length + 1}`, desc: 'Standardowe zadanie weselne...' });
 }
 
 /* =========================================
-   2. INICJALIZACJA I PAMIĘĆ (Core System)
+   2. INICJALIZACJA I ZARZĄDZANIE STANEM
    ========================================= */
 document.addEventListener('DOMContentLoaded', () => {
-    // Cache'ujemy elementy DOM (optymalizacja wydajności)
+    
+    // Cache'owanie DOM (zwiększa wydajność, nie szukamy elementów w locie)
     const els = {
         login: document.getElementById('login-screen'),
         app: document.getElementById('app-container'),
@@ -29,35 +41,39 @@ document.addEventListener('DOMContentLoaded', () => {
         modal: document.getElementById('task-modal'),
         upload: document.getElementById('media-upload'),
         preview: document.getElementById('media-preview'),
-        btnComplete: document.getElementById('btn-complete')
+        btnComplete: document.getElementById('btn-complete'),
+        btnCancel: document.getElementById('btn-cancel'),
+        playerName: document.getElementById('player-name'),
+        tasksLeft: document.getElementById('tasks-left')
     };
 
-    // Pobieramy stan gry z pamięci przeglądarki (localStorage)
+    // Odzyskujemy stan z localStorage (Bank-level stability: odporność na odświeżenie strony)
     let state = JSON.parse(localStorage.getItem('bingoState')) || null;
     let activeIndex = null;
 
-    // Jeśli gość jest już w systemie, pomijamy logowanie
+    // Fast-track: jeśli gość już podał imię, ładujemy planszę
     if (state && state.name) {
         renderApp();
     }
 
 /* =========================================
-   3. LOGIKA STARTU (Tasowanie planszy)
+   3. LOGIKA STARTU (Logowanie i tasowanie)
    ========================================= */
     document.getElementById('start-btn').addEventListener('click', () => {
-        const name = document.getElementById('name-input').value.trim();
-        if (!name) {
-            alert('Proszę, podaj swoje imię.');
+        const nameInput = document.getElementById('name-input').value.trim();
+        if (!nameInput) {
+            alert('Proszę, podaj swoje imię, abyśmy wiedzieli czyje to zadania!');
             return;
         }
         
-        // Algorytm Fisher-Yates (Najwydajniejsze tasowanie - każdy gość ma inną planszę)
-        let shuffled = [...CONFIG.tasks].sort(() => Math.random() - 0.5);
+        // Algorytm Fisher-Yates (Każdy gość ma unikalny układ planszy)
+        let shuffledTasks = [...CONFIG.tasks].sort(() => Math.random() - 0.5);
         
         state = { 
-            name: name, 
-            board: shuffled.map(t => ({ ...t, done: false, media: null })) 
+            name: nameInput, 
+            board: shuffledTasks.map(t => ({ ...t, done: false, media: null })) 
         };
+        
         saveState();
         renderApp();
     });
@@ -68,8 +84,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderApp() {
         els.login.classList.add('hidden');
         els.app.classList.remove('hidden');
-        document.getElementById('player-name').innerText = state.name;
+        els.playerName.innerText = state.name;
         
+        // Czyszczenie i budowa DOM
         els.board.innerHTML = '';
         let doneCount = 0;
 
@@ -77,20 +94,22 @@ document.addEventListener('DOMContentLoaded', () => {
             if (task.done) doneCount++;
             
             const tile = document.createElement('div');
-            // Zabezpieczenie przed XSS, używamy className i innerText
             tile.className = `tile ${task.done ? 'done' : ''}`;
-            tile.innerText = index + 1; // Zgodnie z wytycznymi - tylko numerki
-            tile.onclick = () => openModal(index);
+            tile.innerText = index + 1; // Kafelki pokazują tylko numerki
             
+            // Przypinamy event listener bez inline HTML (Security First - ochrona przed XSS)
+            tile.addEventListener('click', () => openModal(index));
             els.board.appendChild(tile);
         });
 
-        document.getElementById('tasks-left').innerText = 25 - doneCount;
-        checkBingo(); // Sprawdzamy wygraną po każdym renderze
+        els.tasksLeft.innerText = 25 - doneCount;
+        
+        // Asynchroniczne sprawdzenie wygranej, by nie blokować renderowania UI
+        requestAnimationFrame(() => checkBingo());
     }
 
 /* =========================================
-   5. OBSŁUGA ZADAŃ (Modal)
+   5. OBSŁUGA MODALA I WYSYŁKA PLIKÓW
    ========================================= */
     function openModal(index) {
         activeIndex = index;
@@ -100,78 +119,110 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('modal-desc').innerText = task.desc;
         
         if (task.done) {
-            // Widok: Zadanie już zrobione
+            // Tryb: Zadanie wykonane (Opcja wycofania)
             els.btnComplete.innerText = "COFNIJ ZADANIE (POMYŁKA)";
             els.upload.classList.add('hidden');
             els.preview.classList.remove('hidden');
-            // Wyświetlenie podglądu zapisanego w pamięci
-            els.preview.innerHTML = task.media && task.media.includes('video') 
-                ? '<i>Film został zapisany.</i>' 
-                : `<img src="${task.media}" style="max-width:100%; border-radius: 4px;" />`;
+            els.preview.innerHTML = '<i>Plik został przesłany na serwer Młodych.</i>';
         } else {
-            // Widok: Zadanie do zrobienia
+            // Tryb: Zadanie do wykonania
             els.btnComplete.innerText = "OZNACZ JAKO WYKONANE";
             els.upload.classList.remove('hidden');
-            els.upload.value = ''; // Czyszczenie inputu
+            els.upload.value = ''; // Czyszczenie inputu pliku
             els.preview.classList.add('hidden');
         }
 
         els.modal.showModal();
     }
 
-    // Zamykanie modala
-    document.getElementById('btn-cancel').onclick = () => els.modal.close();
+    els.btnCancel.addEventListener('click', () => els.modal.close());
 
-    // Akcja: Wykonanie / Cofnięcie zadania
-    els.btnComplete.onclick = () => {
+    // Główna funkcja wykonawcza: Wysyłka (Make.com API) lub cofnięcie
+    els.btnComplete.addEventListener('click', async () => {
         const task = state.board[activeIndex];
         
         if (task.done) {
-            // Cofanie
+            // Logika wycofania zadania (zmiana zdania)
             task.done = false;
-            task.media = null;
         } else {
-            // Zatwierdzanie
+            // Logika uploadu
             if (els.upload.files.length === 0) {
-                alert('Musisz załączyć zdjęcie lub film ze zrobionego zadania!');
+                alert('Zaraz, zaraz! Musisz załączyć zdjęcie lub wideo jako dowód.');
                 return;
             }
             
-            // Generujemy lokalny URL pliku do podglądu (bez wysyłania na serwer)
             const file = els.upload.files[0];
-            task.media = URL.createObjectURL(file);
-            task.done = true;
+            const originalBtnText = els.btnComplete.innerText;
+            
+            // UX: Blokada podwójnego kliknięcia i loader
+            els.btnComplete.innerText = "WYSYŁANIE... PROSZĘ CZEKAĆ";
+            els.btnComplete.disabled = true;
+
+            try {
+                // Budujemy paczkę danych dla Webhooka
+                const formData = new FormData();
+                formData.append("file", file);
+                formData.append("guest_name", state.name);
+                formData.append("task_title", task.title);
+                formData.append("task_id", task.id);
+
+                const response = await fetch(CONFIG.webhookUrl, {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (response.ok) {
+                    task.done = true;
+                } else {
+                    throw new Error("Odmowa serwera");
+                }
+            } catch (error) {
+                console.error("Upload error:", error);
+                alert("Nie udało się wysłać pliku. Sprawdź połączenie z internetem lub spróbuj mniejszy plik.");
+                els.btnComplete.innerText = originalBtnText;
+                els.btnComplete.disabled = false;
+                return; // Przerwanie funkcji, nie zapisujemy jako 'zrobione'
+            }
+
+            // Sukces - odblokowujemy przycisk
+            els.btnComplete.disabled = false;
         }
 
         saveState();
         els.modal.close();
         renderApp();
-    };
+    });
 
 /* =========================================
-   6. ALGORYTM BINGO (Detekcja wygranej)
+   6. SILNIK BINGO (Matematyka planszy)
    ========================================= */
     function checkBingo() {
+        // Wszystkie możliwe kombinacje wygrywające w siatce 5x5 (Indeksy 0-24)
         const lines = [
-            [0,1,2,3,4], [5,6,7,8,9], [10,11,12,13,14], [15,16,17,18,19], [20,21,22,23,24], // Poziom
-            [0,5,10,15,20], [1,6,11,16,21], [2,7,12,17,22], [3,8,13,18,23], [4,9,14,19,24], // Pion
-            [0,6,12,18,24], [4,8,12,16,20] // Skos
+            // Rzędy poziome
+            [0,1,2,3,4], [5,6,7,8,9], [10,11,12,13,14], [15,16,17,18,19], [20,21,22,23,24],
+            // Kolumny pionowe
+            [0,5,10,15,20], [1,6,11,16,21], [2,7,12,17,22], [3,8,13,18,23], [4,9,14,19,24],
+            // Przekątne
+            [0,6,12,18,24], [4,8,12,16,20]
         ];
 
         for (let line of lines) {
+            // Sprawdzamy czy wszystkie indeksy w danej linii mają status 'done: true'
             if (line.every(index => state.board[index].done)) {
-                // Jeśli flaga bingoWon nie jest ustawiona - pokaż gratulacje
+                
+                // Blokada przed spamowaniem komunikatem po każdym kolejnym zadaniu
                 if (!localStorage.getItem('bingoWon')) {
-                    // Tutaj możemy wywołać ładniejszy modal, na razie natywny alert
-                    setTimeout(() => alert(CONFIG.bingoMessage), 300); 
+                    // setTimeout zapewnia, że najpierw przerysuje się kafelek, a potem wyskoczy alert
+                    setTimeout(() => alert(CONFIG.bingoMessage), 200); 
                     localStorage.setItem('bingoWon', 'true');
                 }
-                return;
+                return; // Znaleźliśmy wygraną, nie musimy sprawdzać reszty kombinacji
             }
         }
     }
 
-    // Helper: Zapis stanu do pamięci przeglądarki
+    // Funkcja pomocnicza: Synchronizacja zmiennej state z pamięcią przeglądarki
     function saveState() {
         localStorage.setItem('bingoState', JSON.stringify(state));
     }
