@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weselne Bingo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- STREFA 1: Ekran Logowania -->
+    <section id="login-screen">
+        <h2>Weselne Bingo!</h2>
+        <p>Wpisz swoje imię, aby rozpocząć grę.</p>
+        <input type="text" id="name-input" placeholder="Twoje imię...">
+        <button id="start-btn" class="btn-primary">Gramy!</button>
+    </section>
+
+    <!-- STREFA 2: Główna aplikacja (domyślnie ukryta klasą .hidden) -->
+    <main id="app-container" class="hidden">
+        <header>
+            <div class="logo">Logo Bingo</div>
+            <div class="user-stats">
+                Witaj <span id="player-name"></span>!<br>
+                Zostało zadań: <strong id="tasks-left">25</strong>
+            </div>
+            <div class="logo">Logo Pary</div>
+        </header>
+
+        <!-- Pusty kontener - siatkę wygeneruje nam JS -->
+        <section id="bingo-board" class="grid"></section>
+    </main>
+
+    <!-- STREFA 3: Modal (Natywny tag dialog - super wydajny i bezpieczny) -->
+    <dialog id="task-modal">
+        <div class="modal-inner">
+            <h2 id="modal-title">Tytuł Zadania</h2>
+            <p id="modal-desc">Opis zadania...</p>
+
+            <!-- Atrybut capture="environment" wymusza na smartfonach odpalenie tylnej kamery -->
+            <input type="file" id="media-upload" accept="image/*,video/*" capture="environment">
+
+            <!-- Miejsce na podgląd zdjęcia/filmu dla już zrobionych zadań -->
+            <div id="media-preview" class="hidden"></div>
+
+            <button id="btn-complete" class="btn-primary">OZNACZ JAKO WYKONANE</button>
+            <button id="btn-cancel" class="btn-secondary">WRACAM DO ZABAWY (ANULUJ)</button>
+        </div>
+    </dialog>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

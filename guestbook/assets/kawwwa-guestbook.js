@@ -1,63 +1,96 @@
-/**
- * Moduł: Kawwwa Cyfrowa Księga Gości - Frontend JS
- * Opis: Obsługa formularza, asynchroniczna wysyłka (Fetch API), walidacja.
- */
+document.addEventListener("DOMContentLoaded", function () {
+    
+    const observerOptions = { root: null, rootMargin: '0px', threshold: 0.1 };
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
 
-document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.observe-me').forEach(item => {
+        observer.observe(item);
+    });
+
     const form = document.getElementById('kawwwa-guestbook-form');
-    // Jeśli nie ma formularza na stronie, przerywamy skrypt (Wydajność)
     if (!form) return;
 
+    const fileInput = document.getElementById('file');
+    const fileLabelText = document.querySelector('#fileLabel span');
     const responseDiv = document.getElementById('kawwwa-form-response');
     const submitBtn = document.getElementById('gb-submit-btn');
 
+    fileInput.addEventListener('change', function (e) {
+        if (e.target.files && e.target.files.length > 0) {
+            let fileName = e.target.files[0].name;
+            if(fileName.length > 20) fileName = fileName.substring(0, 17) + '...';
+            
+            fileLabelText.textContent = "✓ Gotowe (" + fileName + ")";
+            document.getElementById('fileLabel').style.borderColor = "var(--gold-accent)";
+            document.getElementById('fileLabel').style.color = "var(--gold-accent)";
+        } else {
+            fileLabelText.textContent = kawwwaGB.plMedia;
+            document.getElementById('fileLabel').style.borderColor = "var(--text-burgundy)";
+            document.getElementById('fileLabel').style.color = "var(--text-burgundy)";
+        }
+    });
+
     form.addEventListener('submit', async (e) => {
-        // Blokujemy standardowe przeładowanie strony
         e.preventDefault();
+        
+        if (fileInput.files.length > 0 && fileInput.files[0].size > 30 * 1024 * 1024) {
+            responseDiv.style.color = 'red';
+            responseDiv.innerHTML = 'Plik jest za duży (max 30MB).';
+            return;
+        }
 
-        // Zabezpieczenie przed wielokrotnym kliknięciem (Stability)
+        const originalBtnText = submitBtn.textContent;
         submitBtn.disabled = true;
-        submitBtn.innerText = 'Przetwarzanie...';
+        submitBtn.textContent = "Przetwarzanie...";
+        submitBtn.style.backgroundColor = "var(--gold-accent)";
+        submitBtn.style.borderColor = "var(--gold-accent)";
         responseDiv.innerHTML = '';
-        responseDiv.style.color = 'inherit';
 
-        // Pakujemy dane z formularza
         const formData = new FormData(form);
 
         try {
-            // Wysłanie danych do naszego Endpointu REST API (obiekt kawwwaGB zdefiniowaliśmy w PHP)
             const response = await fetch(kawwwaGB.apiUrl, {
                 method: 'POST',
-                headers: {
-                    // Krytyczne: przekazujemy klucz Nonce dla weryfikacji tożsamości
-                    'X-WP-Nonce': kawwwaGB.nonce
-                },
+                headers: { 'X-WP-Nonce': kawwwaGB.nonce },
                 body: formData
             });
 
-            // Odbieramy odpowiedź z serwera
             const result = await response.json();
 
-            // Sprawdzamy status HTTP i naszą flagę 'success'
             if (response.ok && result.success) {
-                form.reset(); // Czyścimy formularz po sukcesie
+                form.reset();
+                
+                fileLabelText.textContent = kawwwaGB.plMedia;
+                document.getElementById('fileLabel').style.borderColor = "var(--text-burgundy)";
+                document.getElementById('fileLabel').style.color = "var(--text-burgundy)";
+                
                 responseDiv.style.color = 'green';
                 responseDiv.innerHTML = result.message;
+                submitBtn.textContent = "Wysłano pomyślnie!";
             } else {
                 responseDiv.style.color = 'red';
-                // Wyświetlamy błąd z backendu lub generyczny
-                responseDiv.innerHTML = result.message || 'Wystąpił błąd podczas wysyłania.';
+                responseDiv.innerHTML = result.message || 'Wystąpił błąd.';
             }
-
         } catch (error) {
-            // Błąd krytyczny (np. padła sieć, serwer nie odpowiada)
-            console.error('Błąd API Księgi Gości:', error);
             responseDiv.style.color = 'red';
-            responseDiv.innerHTML = 'Błąd krytyczny połączenia z serwerem. Spróbuj ponownie.';
+            responseDiv.innerHTML = 'Błąd krytyczny połączenia z serwerem.';
         } finally {
-            // Przywracamy przycisk do stanu początkowego, niezależnie od wyniku
-            submitBtn.disabled = false;
-            submitBtn.innerText = 'Zostaw Życzenia';
+            setTimeout(() => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
+                submitBtn.style.backgroundColor = "var(--btn-color)";
+                submitBtn.style.borderColor = "var(--btn-color)";
+                if (responseDiv.style.color === 'green') {
+                    responseDiv.innerHTML = '';
+                }
+            }, 3000);
         }
     });
 });
