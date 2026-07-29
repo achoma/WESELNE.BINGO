@@ -1,7 +1,7 @@
 /**
  * WESELNE BINGO - CORE ENGINE (Vanilla JS)
- * Wersja: 1.0 (Snippet Library - gotowe do recyklingu)
- * Architektura: SPA + LocalStorage + Asynchronous Webhook
+ * Wersja: 1.1 (Zintegrowana baza IndexedDB dla plików wideo)
+ * Architektura: SPA + LocalStorage + IndexedDB + Asynchronous Webhook
  */
 
 /* =========================================
@@ -19,7 +19,6 @@ const CONFIG = {
         { id: 2, title: 'Wzruszenie', desc: 'Uchwyć moment, gdy ktoś z gości ociera łzę wzruszenia.' },
         { id: 3, title: 'Selfie z Teściową', desc: 'Zrób sobie uśmiechnięte zdjęcie z mamą panny młodej lub pana młodego.' },
         // ... DEV HELP: Pętla poniżej automatycznie dobije do 25 na potrzeby testów.
-        // W produkcji usuń pętlę i wpisz tu fizycznie 25 obiektów.
     ]
 };
 
@@ -33,7 +32,7 @@ while(CONFIG.tasks.length < 25) {
    ========================================= */
 document.addEventListener('DOMContentLoaded', () => {
     
-    // Cache'owanie DOM (zwiększa wydajność, nie szukamy elementów w locie)
+    // Cache'owanie DOM
     const els = {
         login: document.getElementById('login-screen'),
         app: document.getElementById('app-container'),
@@ -47,11 +46,9 @@ document.addEventListener('DOMContentLoaded', () => {
         tasksLeft: document.getElementById('tasks-left')
     };
 
-    // Odzyskujemy stan z localStorage (Bank-level stability: odporność na odświeżenie strony)
     let state = JSON.parse(localStorage.getItem('bingoState')) || null;
     let activeIndex = null;
 
-    // Fast-track: jeśli gość już podał imię, ładujemy planszę
     if (state && state.name) {
         renderApp();
     }
@@ -66,7 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        // Algorytm Fisher-Yates (Każdy gość ma unikalny układ planszy)
         let shuffledTasks = [...CONFIG.tasks].sort(() => Math.random() - 0.5);
         
         state = { 
@@ -86,7 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
         els.app.classList.remove('hidden');
         els.playerName.innerText = state.name;
         
-        // Czyszczenie i budowa DOM
         els.board.innerHTML = '';
         let doneCount = 0;
 
@@ -95,23 +90,17 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const tile = document.createElement('div');
             tile.className = `tile ${task.done ? 'done' : ''}`;
-            tile.innerText = index + 1; // Kafelki pokazują tylko numerki
+            tile.innerText = index + 1; 
             
-            // Przypinamy event listener bez inline HTML (Security First - ochrona przed XSS)
             tile.addEventListener('click', () => openModal(index));
             els.board.appendChild(tile);
         });
 
         els.tasksLeft.innerText = 25 - doneCount;
-        
-        // Asynchroniczne sprawdzenie wygranej, by nie blokować renderowania UI
         requestAnimationFrame(() => checkBingo());
     }
 
 /* =========================================
-   5. OBSŁUGA MODALA I WYSYŁKA PLIKÓW
-   ========================================= */
- /* =========================================
    5. OBSŁUGA MODALA I RENDEROWANIE PODGLĄDU
    ========================================= */
     function openModal(index) {
@@ -122,35 +111,40 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('modal-desc').innerText = task.desc;
         
         if (task.done) {
-            // TRYB: ZADANIE WYKONANE
             els.btnComplete.innerText = "COFNIJ ZADANIE (POMYŁKA)";
-            els.upload.classList.add('hidden'); // Ukrywamy input pliku
-            els.preview.classList.remove('hidden'); // KRYTYCZNE: Odsłaniamy kontener podglądu!
+            els.upload.classList.add('hidden'); 
+            els.preview.classList.remove('hidden'); 
             
-            // SECURITY & STABILITY: System warunkowego renderowania
+            // SECURITY & STABILITY: Odczyt danych z różnych źródeł (Base64 vs IndexedDB)
             if (task.media && task.media.startsWith('data:image')) {
-                // 1. Zwycięstwo: Mamy poprawną miniaturkę w pamięci
-                els.preview.innerHTML = `<img src="${task.media}" style="max-width: 100%; border-radius: var(--radius); margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" />`;
+                // 1. Zwykłe zdjęcie
+                els.preview.innerHTML = `<img src="${task.media}" style="max-width: 100%; border-radius: var(--radius, 8px); margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" />`;
             
+            } else if (task.media && task.media.startsWith('idb:')) {
+                // 2. Odtwarzacz Wideo ładowany asynchronicznie z pamięci IndexedDB
+                const videoKey = task.media.replace('idb:', '');
+                els.preview.innerHTML = '<p style="margin-bottom:20px; color:#555;"><i>Ładowanie wideo z pamięci telefonu...</i></p>';
+                
+                getMediaFromDB(videoKey).then(blob => {
+                    if (blob) {
+                        const vidUrl = URL.createObjectURL(blob);
+                        els.preview.innerHTML = `<video src="${vidUrl}" controls playsinline style="max-width: 100%; border-radius: var(--radius, 8px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px;"></video>`;
+                    } else {
+                        els.preview.innerHTML = '<p style="margin-bottom:20px; color: #d9534f;"><i>Plik wideo został usunięty przez system operacyjny (brak miejsca).</i></p>';
+                    }
+                });
+
             } else if (task.media && task.media.startsWith('blob:')) {
-                // 2. Ochrona: W pamięci utknął śmieć (martwy link testowy)
-                els.preview.innerHTML = '<p style="margin-bottom:20px; color: #d9534f;"><i>Stare zdjęcie testowe w pamięci. Kliknij "Cofnij zadanie" i dodaj nowe.</i></p>';
-            
-            } else if (task.media === "error") {
-                // 3. Ochrona: Smartfon zablokował kompresję (np. nietypowy format HEIC)
-                els.preview.innerHTML = '<p style="margin-bottom:20px; color: #5A2A2F;"><b>Zdjęcie wysłane na serwer.</b><br><small>Przeglądarka zablokowała podgląd na żywo.</small></p>';
-            
+                els.preview.innerHTML = '<p style="margin-bottom:20px; color: #d9534f;"><i>Stare zdjęcie testowe. Kliknij "Cofnij zadanie".</i></p>';
             } else {
-                // 4. Ochrona: Fallback dla filmów wideo (które nie mają miniatury)
-                els.preview.innerHTML = '<p style="margin-bottom:20px; color: #555;"><i>Film zabezpieczony na serwerze Młodych. Podgląd na żywo niedostępny.</i></p>';
+                els.preview.innerHTML = '<p style="margin-bottom:20px; color: #555;"><i>Plik zabezpieczony na serwerze Młodych. Podgląd na żywo niedostępny.</i></p>';
             }
         } else {
-            // TRYB: ZADANIE DO ZROBIENIA
             els.btnComplete.innerText = "OZNACZ JAKO WYKONANE";
-            els.upload.classList.remove('hidden'); // Pokazujemy input pliku
-            els.upload.value = ''; // KRYTYCZNE: Czyścimy stary plik z inputu
-            els.preview.classList.add('hidden'); // Ukrywamy obszar podglądu
-            els.preview.innerHTML = ''; // KRYTYCZNE: Czyścimy DOM ze starego obrazka (Anti-Bloatware)
+            els.upload.classList.remove('hidden'); 
+            els.upload.value = ''; 
+            els.preview.classList.add('hidden'); 
+            els.preview.innerHTML = ''; 
         }
 
         els.modal.showModal();
@@ -158,17 +152,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     els.btnCancel.addEventListener('click', () => els.modal.close());
 
-    // Główna funkcja wykonawcza: Wysyłka (Make.com API) lub cofnięcie
-// Główna funkcja wykonawcza: Wysyłka (Make.com API) lub cofnięcie
+/* =========================================
+   6. WYSYŁKA PLIKÓW I OBSŁUGA COFANIA
+   ========================================= */
     els.btnComplete.addEventListener('click', async () => {
         const task = state.board[activeIndex];
         
         if (task.done) {
-            // Logika wycofania zadania (zmiana zdania)
+            // Zwalnianie pamięci z potężnych plików wideo po cofnięciu zadania
+            if (task.media && task.media.startsWith('idb:')) {
+                await deleteMediaFromDB(task.media.replace('idb:', ''));
+            }
             task.done = false;
-            task.media = null; // WYZEROWANIE MINIATURKI z localStorage
+            task.media = null; 
         } else {
-            // Logika uploadu
             if (els.upload.files.length === 0) {
                 alert('Zaraz, zaraz! Musisz załączyć zdjęcie lub wideo jako dowód.');
                 return;
@@ -176,28 +173,38 @@ document.addEventListener('DOMContentLoaded', () => {
             
             let file = els.upload.files[0];
             const originalBtnText = els.btnComplete.innerText;
+            const isVideo = file.type.startsWith('video/'); 
             
-            // UX: Blokada podwójnego kliknięcia i zabezpieczenie frontendu
             els.btnComplete.disabled = true;
 
-            // 1. TWORZYMY MIKROMINIATURKĘ DO PAMIĘCI (Przed kompresją do wysyłki)
-            // Dzięki temu localStorage ma podgląd ważący zaledwie ~15KB, co chroni system przed padem.
-            const localThumbnail = await generateThumbnail(file);
+            // 1. ZAPIS DO ODPOWIEDNIEJ BAZY DANYCH
+            let localMediaRef = null;
+            if (isVideo) {
+                // WIDEO omija localStorage i trafia bezpiecznie do IndexedDB
+                els.btnComplete.innerText = "PRZETWARZANIE WIDEO...";
+                const videoKey = `video_${task.id}`;
+                await saveMediaToDB(videoKey, file);
+                localMediaRef = `idb:${videoKey}`; 
+            } else {
+                // ZDJĘCIE standardowo jako lekka miniatura w Base64
+                localMediaRef = await generateThumbnail(file);
+            }
 
-            // 2. SYSTEM BEZPIECZEŃSTWA: KOMPRESJA W LOCIE DLA G-DRIVE
-            if (file.type.startsWith('image/')) {
+            // 2. KOMPRESJA I WERYFIKACJA WAGI
+            if (!isVideo) {
                 els.btnComplete.innerText = "KOMPRESOWANIE... PROSZĘ CZEKAĆ";
                 file = await compressImage(file, 1920, 0.8); 
             } else if (file.size > 50 * 1024 * 1024) {
-                // Zabezpieczenie limitów Make.com dla wideo (max 50MB)
                 alert("Ten film jest za duży! Maksymalny dopuszczalny rozmiar to 50MB.");
+                await deleteMediaFromDB(`video_${task.id}`); // Sprzątamy zablokowany film
                 els.btnComplete.disabled = false;
+                els.btnComplete.innerText = originalBtnText;
                 return; 
             }
             
             els.btnComplete.innerText = "WYSYŁANIE... PROSZĘ CZEKAĆ";
 
-            // 3. WYSYŁKA ASYNCHRONICZNA DO MAKE.COM
+            // 3. WYSYŁKA DO WEBHOOKA
             try {
                 const formData = new FormData();
                 formData.append("file", file);
@@ -212,19 +219,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (response.ok) {
                     task.done = true;
-                    task.media = localThumbnail; // SUKCES: Zapisujemy tylko lekką miniaturkę do wyświetlania w aplikacji
+                    task.media = localMediaRef; 
                 } else {
                     throw new Error("Odmowa serwera");
                 }
             } catch (error) {
                 console.error("Upload error:", error);
                 alert("Nie udało się wysłać pliku. Sprawdź połączenie z internetem lub spróbuj mniejszy plik.");
+                if (isVideo) await deleteMediaFromDB(`video_${task.id}`); // Sprzątamy na wypadek błędu sieci
                 els.btnComplete.innerText = originalBtnText;
                 els.btnComplete.disabled = false;
-                return; // Przerwanie funkcji, nie zapisujemy jako 'zrobione'
+                return; 
             }
 
-            // Odblokowanie przycisku po sukcesie
             els.btnComplete.disabled = false;
         }
 
@@ -234,151 +241,121 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 /* =========================================
-   6. SILNIK BINGO (Matematyka planszy)
+   7. SILNIK BINGO (Matematyka planszy)
    ========================================= */
     function checkBingo() {
-        // Wszystkie możliwe kombinacje wygrywające w siatce 5x5 (Indeksy 0-24)
         const lines = [
-            // Rzędy poziome
             [0,1,2,3,4], [5,6,7,8,9], [10,11,12,13,14], [15,16,17,18,19], [20,21,22,23,24],
-            // Kolumny pionowe
             [0,5,10,15,20], [1,6,11,16,21], [2,7,12,17,22], [3,8,13,18,23], [4,9,14,19,24],
-            // Przekątne
             [0,6,12,18,24], [4,8,12,16,20]
         ];
 
         for (let line of lines) {
-            // Sprawdzamy czy wszystkie indeksy w danej linii mają status 'done: true'
             if (line.every(index => state.board[index].done)) {
-                
-                // Blokada przed spamowaniem komunikatem po każdym kolejnym zadaniu
                 if (!localStorage.getItem('bingoWon')) {
-                    // setTimeout zapewnia, że najpierw przerysuje się kafelek, a potem wyskoczy alert
                     setTimeout(() => alert(CONFIG.bingoMessage), 200); 
                     localStorage.setItem('bingoWon', 'true');
                 }
-                return; // Znaleźliśmy wygraną, nie musimy sprawdzać reszty kombinacji
+                return; 
             }
         }
     }
 
-    // Funkcja pomocnicza: Synchronizacja zmiennej state z pamięcią przeglądarki
     function saveState() {
         localStorage.setItem('bingoState', JSON.stringify(state));
     }
 
-// === SNIPPET: KOMPRESJA ZDJĘĆ W LOCIE ===
-// Możesz zapisać tę funkcję do swojej bazy w Notion.
-const compressImage = (file, maxWidth = 1920, quality = 0.8) => {
-    return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file); // Czytamy plik z inputu
-        
-        reader.onload = (event) => {
-            const img = new Image();
-            img.src = event.target.result;
-            
-            img.onload = () => {
-                const canvas = document.createElement('canvas'); // Tworzymy niewidzialne płótno
-                let width = img.width;
-                let height = img.height;
-
-                // Skalujemy proporcjonalnie, jeśli zdjęcie jest za szerokie
-                if (width > maxWidth) {
-                    height = Math.round((height * maxWidth) / width);
-                    width = maxWidth;
-                }
-
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height); // Malujemy pomniejszone zdjęcie
-
-                // Zmieniamy płótno z powrotem w gotowy plik JPG
-                canvas.toBlob((blob) => {
-                    const compressedFile = new File([blob], file.name, {
-                        type: 'image/jpeg',
-                        lastModified: Date.now(),
-                    });
-                    resolve(compressedFile); // Oddajemy lekki plik
-                }, 'image/jpeg', quality); // 0.8 to 80% jakości - idealny balans
-            };
-        };
-    });
-};
-
-// === ZAKTUALIZOWANY SNIPPET: GENERATOR MIKROMINIATUREK (V3 - Foto & Wideo) ===
-// Optymalizacja: Wyciąganie pierwszej klatki z wideo bez zapychania RAMu.
-const generateThumbnail = (file) => {
-    return new Promise((resolve) => {
-        const objectUrl = URL.createObjectURL(file);
-        
-        // 1. OBSŁUGA ZDJĘĆ
-        if (file.type.startsWith('image/')) {
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 300;
-                let width = img.width, height = img.height;
-                if (width > MAX_WIDTH) { height = Math.round((height * MAX_WIDTH) / width); width = MAX_WIDTH; }
-                canvas.width = width; canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                const base64Thumbnail = canvas.toDataURL('image/jpeg', 0.5);
-                URL.revokeObjectURL(objectUrl);
-                resolve(base64Thumbnail); 
-            };
-            img.onerror = () => { URL.revokeObjectURL(objectUrl); resolve("error"); };
-            img.src = objectUrl;
-        
-        // 2. OBSŁUGA WIDEO (Premium Feature)
-        } else if (file.type.startsWith('video/')) {
-            const video = document.createElement('video');
-            video.preload = 'metadata';
-            video.muted = true; // Wymagane przez politykę przeglądarek mobilnych
-            video.playsInline = true;
-
-            // Kiedy wideo załaduje metadane, przewijamy do 1 sekundy (unikamy czarnych klatek)
-            video.onloadeddata = () => { video.currentTime = 1; };
-
-            // Kiedy wideo się przewinie, "robimy zdjęcie"
-            video.onseeked = () => {
-                const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 300;
-                let width = video.videoWidth, height = video.videoHeight;
-                if (width > MAX_WIDTH) { height = Math.round((height * MAX_WIDTH) / width); width = MAX_WIDTH; }
-                
-                canvas.width = width; canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(video, 0, 0, width, height);
-
-                // UX Enhancement: Rysujemy półprzezroczysty przycisk "PLAY" na środku miniatury
-                ctx.fillStyle = "rgba(0,0,0,0.6)";
-                ctx.beginPath();
-                ctx.arc(width/2, height/2, 35, 0, Math.PI*2);
-                ctx.fill();
-                ctx.fillStyle = "white";
-                ctx.beginPath();
-                ctx.moveTo(width/2 - 10, height/2 - 15);
-                ctx.lineTo(width/2 + 15, height/2);
-                ctx.lineTo(width/2 - 10, height/2 + 15);
-                ctx.fill();
-
-                // Zrzut do lekkiego JPEG
-                const base64Thumbnail = canvas.toDataURL('image/jpeg', 0.5);
-                URL.revokeObjectURL(objectUrl); // Czyścimy RAM
-                resolve(base64Thumbnail);
-            };
-
-            video.onerror = () => { URL.revokeObjectURL(objectUrl); resolve("error"); };
-            video.src = objectUrl;
-        
-        // 3. ODRZUCENIE INNYCH PLIKÓW
-        } else {
-            URL.revokeObjectURL(objectUrl);
-            resolve(null);
-        }
-    });
-};
+/* =========================================
+   8. SNIPPETY NARZĘDZIOWE (Kompresja, Miniatury, IndexedDB)
+   ========================================= */
     
+    // --- INDEXED-DB (Obsługa ciężkich plików offline) ---
+    const initDB = () => {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open('BingoDB', 1);
+            request.onupgradeneeded = (e) => e.target.result.createObjectStore('mediaStore');
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject('Błąd bazy IndexedDB');
+        });
+    };
+
+    const saveMediaToDB = async (key, blob) => {
+        const db = await initDB();
+        return new Promise((resolve) => {
+            const tx = db.transaction('mediaStore', 'readwrite');
+            tx.objectStore('mediaStore').put(blob, key);
+            tx.oncomplete = () => resolve(true);
+        });
+    };
+
+    const getMediaFromDB = async (key) => {
+        const db = await initDB();
+        return new Promise((resolve) => {
+            const tx = db.transaction('mediaStore', 'readonly');
+            const req = tx.objectStore('mediaStore').get(key);
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => resolve(null);
+        });
+    };
+
+    const deleteMediaFromDB = async (key) => {
+        const db = await initDB();
+        const tx = db.transaction('mediaStore', 'readwrite');
+        tx.objectStore('mediaStore').delete(key);
+    };
+
+    // --- KOMPRESJA I MINIATURY ---
+    const compressImage = (file, maxWidth = 1920, quality = 0.8) => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file); 
+            
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas'); 
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height); 
+                    canvas.toBlob((blob) => {
+                        resolve(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() })); 
+                    }, 'image/jpeg', quality); 
+                };
+            };
+        });
+    };
+
+    const generateThumbnail = (file) => {
+        return new Promise((resolve) => {
+            const objectUrl = URL.createObjectURL(file);
+            if (file.type.startsWith('image/')) {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 300;
+                    let width = img.width, height = img.height;
+                    if (width > MAX_WIDTH) { height = Math.round((height * MAX_WIDTH) / width); width = MAX_WIDTH; }
+                    canvas.width = width; canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const base64Thumbnail = canvas.toDataURL('image/jpeg', 0.5);
+                    URL.revokeObjectURL(objectUrl);
+                    resolve(base64Thumbnail); 
+                };
+                img.onerror = () => { URL.revokeObjectURL(objectUrl); resolve("error"); };
+                img.src = objectUrl;
+            } else {
+                URL.revokeObjectURL(objectUrl);
+                resolve(null);
+            }
+        });
+    };
 });
