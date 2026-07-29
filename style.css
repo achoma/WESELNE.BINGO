@@ -1,179 +1,214 @@
 /* =========================================
-   1. ZMIENNE (Konfiguracja dla nowego klienta)
+   WESELNE BINGO - DESIGN SYSTEM V1
    ========================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap');
+
+/* 1. ZMIENNE (Edytuj to przy kolejnych zleceniach) */
 :root {
-    --brand-color: #5A2A2F;
-    /* Bordowy kolor pary młodej ze screena */
-    --bg-color: #F8F5F2;
-    /* Tło aplikacji */
-    --tile-bg: #FFFFFF;
-    /* Tło niewykonanego zadania */
-    --text-dark: #333333;
-    --text-light: #FFFFFF;
-    --radius: 4px;
-    /* Ostrość krawędzi (premium look) */
+    --bg-color: #F8F7F4;
+    /* Jasne tło aplikacji */
+    --brand-gold: #BCA37D;
+    /* Kolor bazowy (złoty/beżowy) */
+    --brand-red: #8B1A1A;
+    /* Kolor akcentu / hover / zrobione zadanie */
+    --text-dark: #2C2C2C;
+    /* Kolor tekstu */
+    --radius: 0px;
+    /* Kwadratowe kafelki jak w projekcie */
+    --font-main: 'Montserrat', sans-serif;
 }
 
-/* =========================================
-   2. RESET I FUNDAMENTY (Anti-Bloatware)
-   ========================================= */
+/* 2. RESET I BAZA */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: sans-serif;
 }
 
 body {
-    background: var(--bg-color);
+    background-color: var(--bg-color);
+    font-family: var(--font-main);
     color: var(--text-dark);
     display: flex;
-    justify-content: center;
-    padding: 20px;
+    flex-direction: column;
+    align-items: center;
     min-height: 100vh;
+    padding: 20px 20px 60px 20px;
+}
+
+/* 3. LOGO */
+.main-logo {
+    max-width: 220px;
+    margin: 20px auto 40px auto;
+    display: block;
+}
+
+/* 4. EKRAN LOGOWANIA (Strefa 1) */
+#login-screen {
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+}
+
+#login-screen h2 {
+    font-weight: 600;
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+}
+
+#login-screen p {
+    font-weight: 300;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 18px 20px;
+    border: 1px solid var(--brand-gold);
+    background-color: transparent;
+    font-family: var(--font-main);
+    font-size: 1rem;
+    color: var(--text-dark);
+    margin-bottom: 20px;
+    outline: none;
+}
+
+input[type="text"]::placeholder {
+    color: #999;
+    font-weight: 300;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 18px;
+    background-color: var(--brand-gold);
+    color: white;
+    border: none;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 400;
+    font-family: var(--font-main);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/* Zgodnie z wytycznymi - hover w kolorze zrealizowanego zadania */
+.btn-primary:hover {
+    background-color: var(--brand-red);
+}
+
+/* 5. GŁÓWNA APLIKACJA (Strefa 2) */
+#app-container,
+#app-screen {
+    max-width: 500px;
+    width: 100%;
 }
 
 .hidden {
     display: none !important;
 }
 
-/* =========================================
-   3. TYPOGRAFIA I PRZYCISKI
-   ========================================= */
-button {
-    width: 100%;
-    padding: 15px;
-    font-size: 0.9rem;
-    font-weight: bold;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    cursor: pointer;
-    border-radius: var(--radius);
-    border: none;
-    margin-bottom: 10px;
-    transition: opacity 0.2s;
-}
-
-button:hover {
-    opacity: 0.9;
-}
-
-.btn-primary {
-    background: var(--brand-color);
-    color: var(--text-light);
-}
-
-.btn-secondary {
-    background: var(--text-light);
-    color: var(--text-dark);
-    border: 1px solid #CCC;
-}
-
-input[type="text"] {
-    width: 100%;
-    padding: 15px;
-    margin: 15px 0;
-    border: 1px solid #ccc;
-    border-radius: var(--radius);
-}
-
-/* =========================================
-   4. LAYOUT I SIATKA
-   ========================================= */
-#login-screen {
-    text-align: center;
-    margin-top: 50px;
-    width: 100%;
-    max-width: 400px;
-}
-
-#app-container {
-    width: 100%;
-    max-width: 500px;
-}
-
 header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    text-align: left;
     margin-bottom: 30px;
-    text-align: center;
 }
 
 .user-stats {
-    font-size: 0.9rem;
-    line-height: 1.4;
+    font-weight: 400;
+    font-size: 1.1rem;
+    line-height: 1.5;
 }
 
-.user-stats strong {
-    font-size: 1.2rem;
-    color: var(--brand-color);
-}
-
-/* Siatka Bingo (przygotowana pod wygenerowanie przez JS) */
+/* 6. SIATKA BINGO (Grid) */
 .grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 8px;
+    /* Odstępy między kafelkami */
+    width: 100%;
 }
 
+/* Kafelki bazowe */
 .tile {
-    aspect-ratio: 1;
-    background: var(--tile-bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    font-weight: bold;
-    border-radius: var(--radius);
+    aspect-ratio: 1/1;
+    background-color: var(--brand-gold);
+    /* Magia Anti-Bloatware: ukrywamy numerek z JS i wstawiamy ikonkę SVG w CSS */
+    color: transparent;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 2l1.5 8.5L22 12l-8.5 1.5L12 22l-1.5-8.5L2 12l8.5-1.5z'/%3E%3C/svg%3E");
+    background-size: 45%;
+    background-position: center;
+    background-repeat: no-repeat;
     cursor: pointer;
-    border: 1px solid #E0DCD3;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.1s ease-in-out, background-color 0.3s ease;
 }
 
+/* Efekt kliknięcia na smartfonie */
+.tile:active {
+    transform: scale(0.92);
+}
+
+/* Kafelki wykonane (Zadanie zrobione) */
 .tile.done {
-    background: var(--brand-color);
-    color: var(--text-light);
-    border-color: var(--brand-color);
+    background-color: var(--brand-red);
+    /* Zmiana ikonki na ptaszka w kółku */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M8 12l3 3 5-6'/%3E%3C/svg%3E");
+    background-size: 65%;
 }
 
-/* =========================================
-   5. MODAL (Odwzorowanie widoku klienta ze screena)
-   ========================================= */
+/* 7. MODAL (Strefa 3 i 4) */
 dialog {
     margin: auto;
-    border: none;
-    border-radius: var(--radius);
+    border: 2px solid var(--brand-gold);
+    border-radius: 8px;
     padding: 30px;
     width: 90%;
     max-width: 400px;
+    background-color: white;
     text-align: center;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 dialog::backdrop {
     background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+    /* Eleganckie rozmycie tła */
 }
 
-/* Ściemnienie tła za modale */
-dialog h2 {
-    color: var(--brand-color);
+#modal-title {
+    color: var(--brand-red);
+    font-weight: 600;
     margin-bottom: 15px;
-    font-size: 1.6rem;
-    font-family: serif;
-    /* Dopasowanie do stylistyki Premium z pliku png */
+    letter-spacing: 2px;
+    text-transform: uppercase;
 }
 
-dialog p {
+#modal-desc {
     margin-bottom: 25px;
     line-height: 1.5;
-    color: #555;
 }
 
-#media-upload {
-    margin-bottom: 20px;
+input[type="file"] {
+    margin-bottom: 25px;
+    font-family: var(--font-main);
+}
+
+.btn-secondary {
     width: 100%;
-    padding: 10px;
-    border: 1px dashed #ccc;
-    background: #fafafa;
+    padding: 15px;
+    background-color: transparent;
+    color: var(--text-dark);
+    border: 1px solid var(--brand-gold);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background-color: var(--bg-color);
 }
