@@ -118,21 +118,30 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('modal-title').innerText = task.title;
         document.getElementById('modal-desc').innerText = task.desc;
         
-        if (task.done) {
-                // Tryb: Zadanie wykonane (Opcja wycofania)
-                els.btnComplete.innerText = "COFNIJ ZADANIE (POMYŁKA)";
-                els.upload.classList.add('hidden');
-                els.preview.classList.remove('hidden');
-                
-                // SYSTEM RENDEROWANIA PODGLĄDU (Premium Look)
-                if (task.media) {
-                    // Jeśli mamy miniaturkę w localStorage - wyświetlamy ją z lekkim cieniem
-                    els.preview.innerHTML = ``;
-                } else {
-                    // Fallback dla Wideo (Nie przeciążamy pamięci próbując renderować klatek wideo)
-                    els.preview.innerHTML = 'Wideo zabezpieczone na serwerze. Podgląd na żywo niedostępny.';
-                }
-            } else {
+if (task.done) {
+        // Tryb: Zadanie wykonane (Opcja wycofania)
+        els.btnComplete.innerText = "COFNIJ ZADANIE (POMYŁKA)";
+        els.upload.classList.add('hidden');
+        els.preview.classList.remove('hidden');
+        
+        // SYSTEM RENDEROWANIA (Bank-Level Checks)
+        if (task.media && task.media.startsWith('data:image')) {
+            // 1. Prawidłowa miniaturka Base64 (Zwycięstwo)
+            els.preview.innerHTML = ``;
+        
+        } else if (task.media && task.media.startsWith('blob:')) {
+            // 2. Wykryto Martwy Blob z poprzednich testów (Zabezpieczenie przed błędem cache)
+            els.preview.innerHTML = 'Stare zdjęcie testowe w pamięci cache. Kliknij "Cofnij zadanie" i dodaj nowe.';
+        
+        } else if (task.media === "error") {
+            // 3. Telefon zablokował wygenerowanie miniatury (np. specyficzny format z iPhone)
+            els.preview.innerHTML = 'Zdjęcie wysłane na serwer.Przeglądarka zablokowała podgląd na żywo.';
+        
+        } else {
+            // 4. Wideo (task.media jest nullem)
+            els.preview.innerHTML = 'Film zabezpieczony na serwerze Młodych. Podgląd na żywo niedostępny.';
+        }
+    } else {
             // Tryb: Zadanie do wykonania
             els.btnComplete.innerText = "OZNACZ JAKO WYKONANE";
             els.upload.classList.remove('hidden');
@@ -294,45 +303,49 @@ const compressImage = (file, maxWidth = 1920, quality = 0.8) => {
     });
 };
 
-// === SNIPPET: GENERATOR MIKROMINIATUREK DO LOCALSTORAGE ===
-// Zapisz w bibliotece. Idealne do podglądów zdjęć profilowych itp. bez bazy danych.
+// === ZAKTUALIZOWANY SNIPPET: GENERATOR MIKROMINIATUREK (V2 - Optymalizacja RAM) ===
+// Optymalizacja: Używamy natywnego URL.createObjectURL zamiast ciężkiego FileReader.
 const generateThumbnail = (file) => {
     return new Promise((resolve) => {
-        // Jeśli to wideo, nie generujemy podglądu, rzucamy pusty wynik
+        // Odrzucamy wideo od razu (zabezpieczenie localStorage)
         if (!file.type.startsWith('image/')) {
             resolve(null);
             return;
         }
-
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
         
-        reader.onload = (event) => {
-            const img = new Image();
-            img.src = event.target.result;
+        const img = new Image();
+        const objectUrl = URL.createObjectURL(file); // Wskaźnik do pliku (błyskawiczny)
+        
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 300;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > MAX_WIDTH) {
+                height = Math.round((height * MAX_WIDTH) / width);
+                width = MAX_WIDTH;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const base64Thumbnail = canvas.toDataURL('image/jpeg', 0.5);
             
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 300; // Tylko do okienka modalnego
-                let width = img.width;
-                let height = img.height;
-
-                if (width > MAX_WIDTH) {
-                    height = Math.round((height * MAX_WIDTH) / width);
-                    width = MAX_WIDTH;
-                }
-
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-
-                // Zrzut do bardzo lekkiego Base64 (jakość 0.5)
-                const base64Thumbnail = canvas.toDataURL('image/jpeg', 0.5);
-                resolve(base64Thumbnail); 
-            };
+            URL.revokeObjectURL(objectUrl); // Security & Stability: Czyścimy pamięć RAM ze śmieci!
+            resolve(base64Thumbnail); 
         };
+
+        img.onerror = () => {
+            // Fallback bezpieczeństwa (np. przy nieobsługiwanym formacie HEIC z iPhone)
+            URL.revokeObjectURL(objectUrl);
+            resolve("error");
+        };
+        
+        img.src = objectUrl;
     });
-};    
+};   
     
 });
