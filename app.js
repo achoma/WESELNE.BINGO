@@ -119,12 +119,20 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('modal-desc').innerText = task.desc;
         
         if (task.done) {
-            // Tryb: Zadanie wykonane (Opcja wycofania)
-            els.btnComplete.innerText = "COFNIJ ZADANIE (POMYŁKA)";
-            els.upload.classList.add('hidden');
-            els.preview.classList.remove('hidden');
-            els.preview.innerHTML = '<i>Plik został przesłany na serwer Młodych.</i>';
-        } else {
+                // Tryb: Zadanie wykonane (Opcja wycofania)
+                els.btnComplete.innerText = "COFNIJ ZADANIE (POMYŁKA)";
+                els.upload.classList.add('hidden');
+                els.preview.classList.remove('hidden');
+                
+                // SYSTEM RENDEROWANIA PODGLĄDU (Premium Look)
+                if (task.media) {
+                    // Jeśli mamy miniaturkę w localStorage - wyświetlamy ją z lekkim cieniem
+                    els.preview.innerHTML = ``;
+                } else {
+                    // Fallback dla Wideo (Nie przeciążamy pamięci próbując renderować klatek wideo)
+                    els.preview.innerHTML = 'Wideo zabezpieczone na serwerze. Podgląd na żywo niedostępny.';
+                }
+            } else {
             // Tryb: Zadanie do wykonania
             els.btnComplete.innerText = "OZNACZ JAKO WYKONANE";
             els.upload.classList.remove('hidden');
