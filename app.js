@@ -111,6 +111,9 @@ document.addEventListener('DOMContentLoaded', () => {
 /* =========================================
    5. OBSŁUGA MODALA I WYSYŁKA PLIKÓW
    ========================================= */
+ /* =========================================
+   5. OBSŁUGA MODALA I RENDEROWANIE PODGLĄDU
+   ========================================= */
     function openModal(index) {
         activeIndex = index;
         const task = state.board[index];
@@ -118,35 +121,36 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('modal-title').innerText = task.title;
         document.getElementById('modal-desc').innerText = task.desc;
         
-if (task.done) {
-        // Tryb: Zadanie wykonane (Opcja wycofania)
-        els.btnComplete.innerText = "COFNIJ ZADANIE (POMYŁKA)";
-        els.upload.classList.add('hidden');
-        els.preview.classList.remove('hidden');
-        
-        // SYSTEM RENDEROWANIA (Bank-Level Checks)
-        if (task.media && task.media.startsWith('data:image')) {
-            // 1. Prawidłowa miniaturka Base64 (Zwycięstwo)
-            els.preview.innerHTML = ``;
-        
-        } else if (task.media && task.media.startsWith('blob:')) {
-            // 2. Wykryto Martwy Blob z poprzednich testów (Zabezpieczenie przed błędem cache)
-            els.preview.innerHTML = 'Stare zdjęcie testowe w pamięci cache. Kliknij "Cofnij zadanie" i dodaj nowe.';
-        
-        } else if (task.media === "error") {
-            // 3. Telefon zablokował wygenerowanie miniatury (np. specyficzny format z iPhone)
-            els.preview.innerHTML = 'Zdjęcie wysłane na serwer.Przeglądarka zablokowała podgląd na żywo.';
-        
+        if (task.done) {
+            // TRYB: ZADANIE WYKONANE
+            els.btnComplete.innerText = "COFNIJ ZADANIE (POMYŁKA)";
+            els.upload.classList.add('hidden'); // Ukrywamy input pliku
+            els.preview.classList.remove('hidden'); // KRYTYCZNE: Odsłaniamy kontener podglądu!
+            
+            // SECURITY & STABILITY: System warunkowego renderowania
+            if (task.media && task.media.startsWith('data:image')) {
+                // 1. Zwycięstwo: Mamy poprawną miniaturkę w pamięci
+                els.preview.innerHTML = `<img src="${task.media}" style="max-width: 100%; border-radius: var(--radius); margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" />`;
+            
+            } else if (task.media && task.media.startsWith('blob:')) {
+                // 2. Ochrona: W pamięci utknął śmieć (martwy link testowy)
+                els.preview.innerHTML = '<p style="margin-bottom:20px; color: #d9534f;"><i>Stare zdjęcie testowe w pamięci. Kliknij "Cofnij zadanie" i dodaj nowe.</i></p>';
+            
+            } else if (task.media === "error") {
+                // 3. Ochrona: Smartfon zablokował kompresję (np. nietypowy format HEIC)
+                els.preview.innerHTML = '<p style="margin-bottom:20px; color: #5A2A2F;"><b>Zdjęcie wysłane na serwer.</b><br><small>Przeglądarka zablokowała podgląd na żywo.</small></p>';
+            
+            } else {
+                // 4. Ochrona: Fallback dla filmów wideo (które nie mają miniatury)
+                els.preview.innerHTML = '<p style="margin-bottom:20px; color: #555;"><i>Film zabezpieczony na serwerze Młodych. Podgląd na żywo niedostępny.</i></p>';
+            }
         } else {
-            // 4. Wideo (task.media jest nullem)
-            els.preview.innerHTML = 'Film zabezpieczony na serwerze Młodych. Podgląd na żywo niedostępny.';
-        }
-    } else {
-            // Tryb: Zadanie do wykonania
+            // TRYB: ZADANIE DO ZROBIENIA
             els.btnComplete.innerText = "OZNACZ JAKO WYKONANE";
-            els.upload.classList.remove('hidden');
-            els.upload.value = ''; // Czyszczenie inputu pliku
-            els.preview.classList.add('hidden');
+            els.upload.classList.remove('hidden'); // Pokazujemy input pliku
+            els.upload.value = ''; // KRYTYCZNE: Czyścimy stary plik z inputu
+            els.preview.classList.add('hidden'); // Ukrywamy obszar podglądu
+            els.preview.innerHTML = ''; // KRYTYCZNE: Czyścimy DOM ze starego obrazka (Anti-Bloatware)
         }
 
         els.modal.showModal();
@@ -303,49 +307,78 @@ const compressImage = (file, maxWidth = 1920, quality = 0.8) => {
     });
 };
 
-// === ZAKTUALIZOWANY SNIPPET: GENERATOR MIKROMINIATUREK (V2 - Optymalizacja RAM) ===
-// Optymalizacja: Używamy natywnego URL.createObjectURL zamiast ciężkiego FileReader.
+// === ZAKTUALIZOWANY SNIPPET: GENERATOR MIKROMINIATUREK (V3 - Foto & Wideo) ===
+// Optymalizacja: Wyciąganie pierwszej klatki z wideo bez zapychania RAMu.
 const generateThumbnail = (file) => {
     return new Promise((resolve) => {
-        // Odrzucamy wideo od razu (zabezpieczenie localStorage)
-        if (!file.type.startsWith('image/')) {
-            resolve(null);
-            return;
-        }
+        const objectUrl = URL.createObjectURL(file);
         
-        const img = new Image();
-        const objectUrl = URL.createObjectURL(file); // Wskaźnik do pliku (błyskawiczny)
+        // 1. OBSŁUGA ZDJĘĆ
+        if (file.type.startsWith('image/')) {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 300;
+                let width = img.width, height = img.height;
+                if (width > MAX_WIDTH) { height = Math.round((height * MAX_WIDTH) / width); width = MAX_WIDTH; }
+                canvas.width = width; canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                const base64Thumbnail = canvas.toDataURL('image/jpeg', 0.5);
+                URL.revokeObjectURL(objectUrl);
+                resolve(base64Thumbnail); 
+            };
+            img.onerror = () => { URL.revokeObjectURL(objectUrl); resolve("error"); };
+            img.src = objectUrl;
         
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const MAX_WIDTH = 300;
-            let width = img.width;
-            let height = img.height;
+        // 2. OBSŁUGA WIDEO (Premium Feature)
+        } else if (file.type.startsWith('video/')) {
+            const video = document.createElement('video');
+            video.preload = 'metadata';
+            video.muted = true; // Wymagane przez politykę przeglądarek mobilnych
+            video.playsInline = true;
 
-            if (width > MAX_WIDTH) {
-                height = Math.round((height * MAX_WIDTH) / width);
-                width = MAX_WIDTH;
-            }
+            // Kiedy wideo załaduje metadane, przewijamy do 1 sekundy (unikamy czarnych klatek)
+            video.onloadeddata = () => { video.currentTime = 1; };
 
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
+            // Kiedy wideo się przewinie, "robimy zdjęcie"
+            video.onseeked = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 300;
+                let width = video.videoWidth, height = video.videoHeight;
+                if (width > MAX_WIDTH) { height = Math.round((height * MAX_WIDTH) / width); width = MAX_WIDTH; }
+                
+                canvas.width = width; canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, width, height);
 
-            const base64Thumbnail = canvas.toDataURL('image/jpeg', 0.5);
-            
-            URL.revokeObjectURL(objectUrl); // Security & Stability: Czyścimy pamięć RAM ze śmieci!
-            resolve(base64Thumbnail); 
-        };
+                // UX Enhancement: Rysujemy półprzezroczysty przycisk "PLAY" na środku miniatury
+                ctx.fillStyle = "rgba(0,0,0,0.6)";
+                ctx.beginPath();
+                ctx.arc(width/2, height/2, 35, 0, Math.PI*2);
+                ctx.fill();
+                ctx.fillStyle = "white";
+                ctx.beginPath();
+                ctx.moveTo(width/2 - 10, height/2 - 15);
+                ctx.lineTo(width/2 + 15, height/2);
+                ctx.lineTo(width/2 - 10, height/2 + 15);
+                ctx.fill();
 
-        img.onerror = () => {
-            // Fallback bezpieczeństwa (np. przy nieobsługiwanym formacie HEIC z iPhone)
+                // Zrzut do lekkiego JPEG
+                const base64Thumbnail = canvas.toDataURL('image/jpeg', 0.5);
+                URL.revokeObjectURL(objectUrl); // Czyścimy RAM
+                resolve(base64Thumbnail);
+            };
+
+            video.onerror = () => { URL.revokeObjectURL(objectUrl); resolve("error"); };
+            video.src = objectUrl;
+        
+        // 3. ODRZUCENIE INNYCH PLIKÓW
+        } else {
             URL.revokeObjectURL(objectUrl);
-            resolve("error");
-        };
-        
-        img.src = objectUrl;
+            resolve(null);
+        }
     });
-};   
+};
     
 });
