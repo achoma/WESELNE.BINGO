@@ -9,7 +9,7 @@
    ========================================= */
 const CONFIG = {
     // Adres Webhooka z Make.com (lub Zapier), który odbiera pliki i wrzuca na Google Drive
-    webhookUrl: "https://hook.eu1.make.com/TWOJ_ID_WEBHOOKA", 
+    webhookUrl: "https://hook.eu1.make.com/a3q28ldn4jiod94tormccogppeq4umj4", 
     
     bingoMessage: "Mamy bingo! Odbierz nagrodę u świadka przy barze!",
     
