@@ -138,12 +138,14 @@ document.addEventListener('DOMContentLoaded', () => {
     els.btnCancel.addEventListener('click', () => els.modal.close());
 
     // Główna funkcja wykonawcza: Wysyłka (Make.com API) lub cofnięcie
+// Główna funkcja wykonawcza: Wysyłka (Make.com API) lub cofnięcie
     els.btnComplete.addEventListener('click', async () => {
         const task = state.board[activeIndex];
         
         if (task.done) {
             // Logika wycofania zadania (zmiana zdania)
             task.done = false;
+            task.media = null; // WYZEROWANIE MINIATURKI z localStorage
         } else {
             // Logika uploadu
             if (els.upload.files.length === 0) {
@@ -151,30 +153,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
-            let file = els.upload.files[0]; // Zmiana z const na let, bo będziemy podmieniać plik
+            let file = els.upload.files[0];
             const originalBtnText = els.btnComplete.innerText;
-                    
-            // UX: Blokada podwójnego kliknięcia
+            
+            // UX: Blokada podwójnego kliknięcia i zabezpieczenie frontendu
             els.btnComplete.disabled = true;
 
-            // === SYSTEM BEZPIECZEŃSTWA (Bank) ===
-            // Sprawdzamy czy to zdjęcie (zaczyna się od 'image/')
+            // 1. TWORZYMY MIKROMINIATURKĘ DO PAMIĘCI (Przed kompresją do wysyłki)
+            // Dzięki temu localStorage ma podgląd ważący zaledwie ~15KB, co chroni system przed padem.
+            const localThumbnail = await generateThumbnail(file);
+
+            // 2. SYSTEM BEZPIECZEŃSTWA: KOMPRESJA W LOCIE DLA G-DRIVE
             if (file.type.startsWith('image/')) {
                 els.btnComplete.innerText = "KOMPRESOWANIE... PROSZĘ CZEKAĆ";
-                // Przepuszczamy przez maszynkę odchudzającą (czekamy aż skończy)
                 file = await compressImage(file, 1920, 0.8); 
             } else if (file.size > 50 * 1024 * 1024) {
-                // Zabezpieczenie przed ogromnymi plikami WIDEO (powyżej 50MB)
+                // Zabezpieczenie limitów Make.com dla wideo (max 50MB)
                 alert("Ten film jest za duży! Maksymalny dopuszczalny rozmiar to 50MB.");
                 els.btnComplete.disabled = false;
-                return; // Zatrzymujemy wysyłanie
+                return; 
             }
-
-            // Zmiana tekstu dla samej wysyłki
+            
             els.btnComplete.innerText = "WYSYŁANIE... PROSZĘ CZEKAĆ";
 
+            // 3. WYSYŁKA ASYNCHRONICZNA DO MAKE.COM
             try {
-                // Budujemy paczkę danych dla Webhooka
                 const formData = new FormData();
                 formData.append("file", file);
                 formData.append("guest_name", state.name);
@@ -188,6 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (response.ok) {
                     task.done = true;
+                    task.media = localThumbnail; // SUKCES: Zapisujemy tylko lekką miniaturkę do wyświetlania w aplikacji
                 } else {
                     throw new Error("Odmowa serwera");
                 }
@@ -199,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return; // Przerwanie funkcji, nie zapisujemy jako 'zrobione'
             }
 
-            // Sukces - odblokowujemy przycisk
+            // Odblokowanie przycisku po sukcesie
             els.btnComplete.disabled = false;
         }
 
@@ -282,4 +286,45 @@ const compressImage = (file, maxWidth = 1920, quality = 0.8) => {
     });
 };
 
+// === SNIPPET: GENERATOR MIKROMINIATUREK DO LOCALSTORAGE ===
+// Zapisz w bibliotece. Idealne do podglądów zdjęć profilowych itp. bez bazy danych.
+const generateThumbnail = (file) => {
+    return new Promise((resolve) => {
+        // Jeśli to wideo, nie generujemy podglądu, rzucamy pusty wynik
+        if (!file.type.startsWith('image/')) {
+            resolve(null);
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 300; // Tylko do okienka modalnego
+                let width = img.width;
+                let height = img.height;
+
+                if (width > MAX_WIDTH) {
+                    height = Math.round((height * MAX_WIDTH) / width);
+                    width = MAX_WIDTH;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Zrzut do bardzo lekkiego Base64 (jakość 0.5)
+                const base64Thumbnail = canvas.toDataURL('image/jpeg', 0.5);
+                resolve(base64Thumbnail); 
+            };
+        };
+    });
+};    
+    
 });
