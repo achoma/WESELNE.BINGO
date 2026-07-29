@@ -151,12 +151,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
-            const file = els.upload.files[0];
+            let file = els.upload.files[0]; // Zmiana z const na let, bo będziemy podmieniać plik
             const originalBtnText = els.btnComplete.innerText;
-            
-            // UX: Blokada podwójnego kliknięcia i loader
-            els.btnComplete.innerText = "WYSYŁANIE... PROSZĘ CZEKAĆ";
+                    
+            // UX: Blokada podwójnego kliknięcia
             els.btnComplete.disabled = true;
+
+            // === SYSTEM BEZPIECZEŃSTWA (Bank) ===
+            // Sprawdzamy czy to zdjęcie (zaczyna się od 'image/')
+            if (file.type.startsWith('image/')) {
+                els.btnComplete.innerText = "KOMPRESOWANIE... PROSZĘ CZEKAĆ";
+                // Przepuszczamy przez maszynkę odchudzającą (czekamy aż skończy)
+                file = await compressImage(file, 1920, 0.8); 
+            } else if (file.size > 50 * 1024 * 1024) {
+                // Zabezpieczenie przed ogromnymi plikami WIDEO (powyżej 50MB)
+                alert("Ten film jest za duży! Maksymalny dopuszczalny rozmiar to 50MB.");
+                els.btnComplete.disabled = false;
+                return; // Zatrzymujemy wysyłanie
+            }
+
+            // Zmiana tekstu dla samej wysyłki
+            els.btnComplete.innerText = "WYSYŁANIE... PROSZĘ CZEKAĆ";
 
             try {
                 // Budujemy paczkę danych dla Webhooka
@@ -226,4 +241,45 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveState() {
         localStorage.setItem('bingoState', JSON.stringify(state));
     }
+
+// === SNIPPET: KOMPRESJA ZDJĘĆ W LOCIE ===
+// Możesz zapisać tę funkcję do swojej bazy w Notion.
+const compressImage = (file, maxWidth = 1920, quality = 0.8) => {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file); // Czytamy plik z inputu
+        
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            
+            img.onload = () => {
+                const canvas = document.createElement('canvas'); // Tworzymy niewidzialne płótno
+                let width = img.width;
+                let height = img.height;
+
+                // Skalujemy proporcjonalnie, jeśli zdjęcie jest za szerokie
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height); // Malujemy pomniejszone zdjęcie
+
+                // Zmieniamy płótno z powrotem w gotowy plik JPG
+                canvas.toBlob((blob) => {
+                    const compressedFile = new File([blob], file.name, {
+                        type: 'image/jpeg',
+                        lastModified: Date.now(),
+                    });
+                    resolve(compressedFile); // Oddajemy lekki plik
+                }, 'image/jpeg', quality); // 0.8 to 80% jakości - idealny balans
+            };
+        };
+    });
+};
+
 });
