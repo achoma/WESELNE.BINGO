@@ -176,6 +176,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     els.btnCancel.addEventListener('click', () => els.modal.close());
 
+    // Zamknięcie ekranu wygranej (overlay)
+    document.getElementById('btn-close-overlay')?.addEventListener('click', () => {
+        document.getElementById('bingo-overlay').classList.add('hidden');
+    });
+
 /* =========================================
    6. WYSYŁKA PLIKÓW I OBSŁUGA COFANIA
    ========================================= */
