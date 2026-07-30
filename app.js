@@ -34,7 +34,7 @@ const CONFIG = {
         { id: 17, title: 'Sojusz mięsny (lub wege)', desc: 'Fotka z osobą, z którą spotkałeś/aś się przy wiejskim stole podczas nakładania tej samej potrawy (np. ogórka kiszonego lub smalcu). Przybicie widelców mile widziane!' },
         { id: 18, title: 'Barmański test smaku', desc: 'Zdjęcie z gościem, który polecił Ci swój ulubiony drink z baru. Na zdjęciu oboje trzymacie szklanki i robicie minę kiwających z uznaniem głową ekspertów.' },
         { id: 19, title: 'Kofeinowe ploteczki', desc: 'Fotka z kimś, kogo zagadnąłeś/aś w kolejce do ekspresu po weselną kawę, trzymając filiżanki w geście toastu.' },
-        { id: 20, title: 'SWeselny wywiad', desc: 'Zdjęcie z gościem ze stołu o numerze o 4 wyższym lub niższym od Twojego, od którego dowiedziałeś/aś się, skąd dokładnie zna Parę Młodą.' },
+        { id: 20, title: 'Weselny wywiad', desc: 'Zdjęcie z gościem ze stołu o numerze o 4 wyższym lub niższym od Twojego, od którego dowiedziałeś/aś się, skąd dokładnie zna Parę Młodą.' },
         { id: 21, title: 'Wysoka piątka', desc: 'Zdjęcie w locie, na którym przybijasz spektakularną „piątkę” z kimś, mijając się w szybkim tańcu grupowym.' },
         { id: 22, title: 'Grupowe rozpięcie', desc: 'Selfie z co najmniej trzema innymi dżentelmenami, którzy solidarnie podwinęli rękawy w koszulach do tej samej wysokości.' },
         { id: 23, title: 'Matematyka weselna', desc: 'Odwiedź stolik, którego numer po zsumowaniu z Twoim daje liczbę 10 (np. jeśli siedzisz przy Stole 3, Twoim celem jest Stół 7). Zrób sobie grupowe selfie z całą tamtejszą ekipą w geście "zjednoczenia stołów"!' },
