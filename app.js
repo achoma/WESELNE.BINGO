@@ -15,9 +15,33 @@ const CONFIG = {
     
     // Lista zadań (Docelowo 25. Uzupełnij dla konkretnej pary młodej)
     tasks: [
-        { id: 1, title: 'Król Parkietu', desc: 'Wideo z solowego, epickiego popisu tanecznego (szalone obroty i skoki mile widziane!).' },
-        { id: 2, title: 'Wzruszenie', desc: 'Uchwyć moment, gdy ktoś z gości ociera łzę wzruszenia.' },
-        { id: 3, title: 'Selfie z Teściową', desc: 'Zrób sobie uśmiechnięte zdjęcie z mamą panny młodej lub pana młodego.' },
+        { id: 1, title: 'Dworska dyplomacja', desc: 'Nagranie, na którym namawiasz innego gościa (z przeciwnej rodziny!), aby wspólnie z Tobą spróbował pogadać z zamkowymi papugami.' },
+        { id: 2, title: 'Królewska sjesta', desc: 'Zdjęcie kogoś, kto ukradkiem "złapał zawieszkę" lub ucina sobie drzemkę na siedząco.' },
+        { id: 3, title: 'Słodki rabuś', desc: 'Zdjęcie osoby, która nałożyła sobie na talerzyk tyle ciast ze słodkiego stołu, że ledwo mieści je w dłoniach.' },
+        { id: 4, title: 'Król Parkietu', desc: 'Wideo z solowego, epickiego popisu tanecznego (szalone obroty i skoki mile widziane!).' },
+        { id: 5, title: 'Grupowe błogosławieństwo', desc: 'Selfie z portretem Ignacego Krasickiego w sali balowej, ale na zdjęciu musisz być Ty oraz przynajmniej dwie osoby, których nie znałeś/aś przed weselem!' },
+        { id: 6, title: 'Taneczny pociąg', desc: 'Filmik z parkietu, na którym prowadzisz lub dołączasz do wężyka/pociągu tanecznego i trzymasz za ramiona kogoś, kogo dopiero co poznałeś/aś.' },
+        { id: 7, title: 'Klub płaskiego obuwia', desc: 'Zdjęcie, na którym pozujesz z inną osobą, która (tak jak Ty lub zamiast Ciebie) zmieniła już buty na wygodne trampki.' },
+        { id: 8, title: 'Krasicki by tego nie wymyślił', desc: 'Filmik, na którym inny gość opowiada Ci najgorszy lub najśmieszniejszy weselny suchar, jaki zna (im czarniejszy humor tym lepiej!).' },
+        { id: 9, title: 'Synchroniczne szaleństwo', desc: 'Wideo, na którym tańczysz ramię w ramię z kimś nowym ten sam układ (np. Macarenę, Belgijkę czy lub inne).' },
+        { id: 10, title: 'Dworskie pogaduchy', desc: 'Fotka z kimś, kogo poznałeś/aś dopiero przed chwilą, podczas wspólnego łapania oddechu na tej samej ławce w parku.' },
+        { id: 11, title: 'Agenci w garniturach', desc: 'Selfie z osobą, z którą wspólnie założyliście okulary przeciwsłoneczne na parkiecie po północy (im ciemniej w sali, tym lepiej!).' },
+        { id: 12, title: 'Złoty środek', desc: 'Zdjęcie, na którym "witasz się" (np. epicki żółwik lub skomplikowany uścisk dłoni) z osobą, która ma na sobie ubranie w tym samym kolorze co Ty.' },
+        { id: 13, title: 'Słodki pakt', desc: 'Krótkie wideo, na którym wspólnie z kimś nowym „testujecie” ten sam deser ze słodkiego stołu i jednocześnie oceniacie go kciukiem w górę.' },
+        { id: 14, title: 'Mistrz drugiego planu', desc: 'Tradycyjne selfie z kimś bliskim, ale musicie tak pokierować kadrem, aby w tle zepsuł je Wam (wskakując z głupią miną) zupełnie obcy gość.' },
+        { id: 15, title: 'Zaklinacze alpak', desc: 'Filmik, na którym wraz z nowo poznanym gościem próbujecie zsynchronizować Wasze ruchy głowy z ruchami żującej alpaki w zagrodzie.' },
+        { id: 16, title: 'Strażnicy Zamkowych Wrót', desc: 'Zdjęcie z gościem, z którym zrobiliście groźne miny niczym średniowieczni strażnicy, stojąc po dwóch stronach wejścia do zamku (tuż obok papug!).' },
+        { id: 17, title: 'Sojusz mięsny (lub wege)', desc: 'Fotka z osobą, z którą spotkałeś/aś się przy wiejskim stole podczas nakładania tej samej potrawy (np. ogórka kiszonego lub smalcu). Przybicie widelców mile widziane!' },
+        { id: 18, title: 'Barmański test smaku', desc: 'Zdjęcie z gościem, który polecił Ci swój ulubiony drink z baru. Na zdjęciu oboje trzymacie szklanki i robicie minę kiwających z uznaniem głową ekspertów.' },
+        { id: 19, title: 'Kofeinowe ploteczki', desc: 'Fotka z kimś, kogo zagadnąłeś/aś w kolejce do ekspresu po weselną kawę, trzymając filiżanki w geście toastu.' },
+        { id: 20, title: 'SWeselny wywiad', desc: 'Zdjęcie z gościem ze stołu o numerze o 4 wyższym lub niższym od Twojego, od którego dowiedziałeś/aś się, skąd dokładnie zna Parę Młodą.' },
+        { id: 21, title: 'Wysoka piątka', desc: 'Zdjęcie w locie, na którym przybijasz spektakularną „piątkę” z kimś, mijając się w szybkim tańcu grupowym.' },
+        { id: 22, title: 'Grupowe rozpięcie', desc: 'Selfie z co najmniej trzema innymi dżentelmenami, którzy solidarnie podwinęli rękawy w koszulach do tej samej wysokości.' },
+        { id: 23, title: 'Matematyka weselna', desc: 'Odwiedź stolik, którego numer po zsumowaniu z Twoim daje liczbę 10 (np. jeśli siedzisz przy Stole 3, Twoim celem jest Stół 7). Zrób sobie grupowe selfie z całą tamtejszą ekipą w geście "zjednoczenia stołów"!' },
+        { id: 24, title: 'Wizytacja u sąsiada', desc: 'Podejdź do stolika o numerze o jeden wyższym lub niższym niż Twój, znajdź tam osobę o tym samym kolorze oczu co Ty i nagraj wideo, na którym wznosicie wspólny okrzyk: „Za Parę Młodą!”.' },
+        { id: 25, title: 'Poetycka misja u Krasickiego', desc: 'Zbierz po jednej osobie z trzech różnych stołów (muszą pokazać na palcach numery swoich stolików) i zróbcie wspólne, epickie zdjęcie pod portretem Ignacego Krasickiego jako „Sojusz Czterech Stołów”.' },
+
+
         // ... DEV HELP: Pętla poniżej automatycznie dobije do 25 na potrzeby testów.
     ]
 };
