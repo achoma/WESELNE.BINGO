@@ -8,11 +8,11 @@
 :root {
     --bg-color: #F8F7F4;
     /* Jasne tło aplikacji */
-    --brand-gold: #BCA37D;
+    --brand-gold: #BFA175;
     /* Kolor bazowy (złoty/beżowy) */
-    --brand-red: #8B1A1A;
+    --brand-red: #5C1322;
     /* Kolor akcentu / hover / zrobione zadanie */
-    --text-dark: #2C2C2C;
+    --text-dark: #23070C;
     /* Kolor tekstu */
     --radius: 0px;
     /* Kwadratowe kafelki jak w projekcie */
