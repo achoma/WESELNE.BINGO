@@ -24,14 +24,14 @@
 
     <!-- STREFA 2: Główna aplikacja (domyślnie ukryta klasą .hidden) -->
     <main id="app-container" class="hidden">
-        <header>
-            <div class="logo">Logo Bingo</div>
-            <div class="user-stats">
-                Witaj <span id="player-name"></span>!<br>
-                Zostało zadań: <strong id="tasks-left">25</strong>
-            </div>
-            <div class="logo">Logo Pary</div>
-        </header>
+<header>
+    <div class="user-stats">
+        Cześć <span id="player-name"></span>!<br>
+        Rozglądaj się uważnie, zaznaczaj trafienia i baw się dobrze!
+        <!-- Bezpiecznik dla JS (Anti-Bloatware) - ukryty, by nie psuć designu -->
+        <span id="tasks-left" style="display: none;"></span>
+    </div>
+</header>
 
         <!-- Pusty kontener - siatkę wygeneruje nam JS -->
         <section id="bingo-board" class="grid"></section>
@@ -57,7 +57,7 @@
     <!-- STREFA 4: Ekran Zwycięstwa -->
     <div id="bingo-overlay" class="hidden">
         <div class="overlay-content"
-            style="text-align: center; background: white; padding: 40px; border-radius: 12px; max-width: 90%;">
+            style="text-align: center; background: white; padding: 40px; border-radius: 4px; max-width: 90%;">
             <h1
                 style="color:var(--brand-red, #8B1A1A); font-size: 2.5rem; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 3px;">
                 BINGO</h1>

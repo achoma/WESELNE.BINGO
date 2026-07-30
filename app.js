@@ -253,7 +253,10 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let line of lines) {
             if (line.every(index => state.board[index].done)) {
                 if (!localStorage.getItem('bingoWon')) {
-                    setTimeout(() => alert(CONFIG.bingoMessage), 200); 
+                    // DEV: Podpinamy natywny DOM zamiast systemowego alertu
+                    setTimeout(() => {
+                        document.getElementById('bingo-overlay').classList.remove('hidden');
+                    }, 200); 
                     localStorage.setItem('bingoWon', 'true');
                 }
                 return; 
