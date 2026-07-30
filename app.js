@@ -390,4 +390,50 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     };
+
+/* =========================================
+   9. UKRYTY "KILL SWITCH" (Reset Aplikacji)
+   ========================================= */
+    // Ścieżka ratunkowa: 5 szybkich tapnięć w główne logo czyści bazę (LocalStorage + IndexedDB).
+    // Snippet do recyklingu przy każdej kolejnej aplikacji PWA.
+    
+    let clickCount = 0;
+    let clickTimer = null;
+    const mainLogo = document.querySelector('.main-logo');
+
+    if (mainLogo) {
+        mainLogo.addEventListener('click', () => {
+            clickCount++;
+            
+            // Resetuj licznik kliknięć po 2 sekundach bezczynności
+            if (clickTimer) clearTimeout(clickTimer);
+            clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
+
+            // Jeśli kliknięto 5 razy z rzędu
+            if (clickCount >= 5) {
+                const confirmReset = confirm("TRYB SERWISOWY: Czy na pewno chcesz całkowicie zresetować grę i usunąć postępy?");
+                
+                if (confirmReset) {
+                    // 1. Czyszczenie lekkich danych z LocalStorage
+                    localStorage.removeItem('bingoState');
+                    localStorage.removeItem('bingoWon');
+                    
+                    // 2. Czyszczenie ciężkich plików wideo z IndexedDB
+                    const req = indexedDB.deleteDatabase('BingoDB');
+                    
+                    req.onsuccess = () => {
+                        alert("Pamięć wyczyszczona. Aplikacja gotowa do nowej gry.");
+                        window.location.reload(); // Twardy reset widoku
+                    };
+                    
+                    req.onerror = () => {
+                        alert("Błąd: Nie udało się wyczyścić pamięci IndexedDB.");
+                    };
+                }
+                clickCount = 0; // Wyzerowanie po akcji
+            }
+        });
+    }
+
+
 });
