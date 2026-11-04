@@ -5,25 +5,25 @@
 
 const CONFIG = {
     // Brak webhooka Make.com - to jest odizolowane demo.
-    bingoMessage: "Mamy bingo! Odbierz nagrodę u świadka przy barze!",
+    bingoMessage: "Mamy bingo! Odbierz nagrodę u świadka!",
     
     tasks: [
-        { id: 1, title: 'Dworska dyplomacja', desc: 'Nagranie, na którym namawiasz innego gościa (z przeciwnej rodziny!), aby wspólnie z Tobą spróbował pogadać z zamkowymi papugami.' },
-        { id: 2, title: 'Królewska sjesta', desc: 'Zdjęcie kogoś, kto ukradkiem "złapał zawieszkę" lub ucina sobie drzemkę na siedząco.' },
-        { id: 3, title: 'Słodki rabuś', desc: 'Zdjęcie osoby, która nałożyła sobie na talerzyk tyle ciast ze słodkiego stołu, że ledwo mieści je w dłoniach.' },
-        { id: 4, title: 'Król Parkietu', desc: 'Wideo z solowego, epickiego popisu tanecznego (szalone obroty i skoki mile widziane!).' },
-        { id: 5, title: 'Grupowe błogosławieństwo', desc: 'Selfie z portretem Ignacego Krasickiego w sali balowej, ale na zdjęciu musisz być Ty oraz przynajmniej dwie osoby, których nie znałeś/aś przed weselem!' },
-        { id: 6, title: 'Taneczny pociąg', desc: 'Filmik z parkietu, na którym prowadzisz lub dołączasz do wężyka/pociągu tanecznego i trzymasz za ramiona kogoś, kogo dopiero co poznałeś/aś.' },
-        { id: 7, title: 'Klub płaskiego obuwia', desc: 'Zdjęcie, na którym pozujesz z inną osobą, która (tak jak Ty lub zamiast Ciebie) zmieniła już buty na wygodne trampki.' },
-        { id: 8, title: 'Krasicki by tego nie wymyślił', desc: 'Filmik, na którym inny gość opowiada Ci najgorszy lub najśmieszniejszy weselny suchar, jaki zna (im czarniejszy humor tym lepiej!).' },
-        { id: 9, title: 'Synchroniczne szaleństwo', desc: 'Wideo, na którym tańczysz ramię w ramię z kimś nowym ten sam układ (np. Macarenę, Belgijkę czy lub inne).' },
-        { id: 10, title: 'Dworskie pogaduchy', desc: 'Fotka z kimś, kogo poznałeś/aś dopiero przed chwilą, podczas wspólnego łapania oddechu na tej samej ławce w parku.' },
-        { id: 11, title: 'Agenci w garniturach', desc: 'Selfie z osobą, z którą wspólnie założyliście okulary przeciwsłoneczne na parkiecie po północy (im ciemniej w sali, tym lepiej!).' },
-        { id: 12, title: 'Złoty środek', desc: 'Zdjęcie, na którym "witasz się" (np. epicki żółwik lub skomplikowany uścisk dłoni) z osobą, która ma na sobie ubranie w tym samym kolorze co Ty.' },
-        { id: 13, title: 'Słodki pakt', desc: 'Krótkie wideo, na którym wspólnie z kimś nowym „testujecie” ten sam deser ze słodkiego stołu i jednocześnie oceniacie go kciukiem w górę.' },
+        { id: 1, title: 'Selfie ze Świadkową', desc: 'Znajdź prawą rękę Panny Młodej i zróbcie sobie pamiątkowe, uśmiechnięte zdjęcie.' },
+        { id: 2, title: 'Toast za miłość!', desc: 'Uwiecznij na zdjęciu moment, w którym wznosisz toast (nawet wodą!) z rodzicami Pary Młodej.' },
+        { id: 3, title: 'Stylowy detal', desc: 'Zrób zdjęcie najpiękniejszej Twoim zdaniem dekoracji na sali weselnej.' },
+        { id: 4, title: 'Słodkie chwile', desc: 'Sfotografuj swój ulubiony deser ze słodkiego stołu – oczywiście zanim go zjesz!' },
+        { id: 5, title: 'Pokolenia na parkiecie', desc: 'Zrób sobie zdjęcie podczas tańca z jednym z najstarszych gości na weselu.' },
+        { id: 6, title: 'Kolorowy zawrót głowy', desc: 'Znajdź kogoś, kto ma na sobie element ubioru w tym samym kolorze co Ty, i zróbcie wspólne selfie.' },
+        { id: 7, title: 'Pocałunek Młodej Pary', desc: 'Bądź jak paparazzo – uchwyć na zdjęciu moment, gdy nowożeńcy się całują.' },
+        { id: 8, title: 'Nocna sceneria', desc: 'Wyjdź na zewnątrz i zrób klimatyczne zdjęcie budynku sali weselnej po zmroku.' },
+        { id: 9, title: 'W dobrych rękach', desc: 'Zrób ukradkowe zdjęcie fotografowi lub kamerzyście, gdy są w ferworze pracy.' },
+        { id: 10, title: 'Nowa znajomość', desc: 'Przedstaw się komuś, kogo wcześniej nie znałeś, i uwiecznij to spotkanie na selfie.' },
+        { id: 11, title: 'Królowie parkietu', desc: 'Sfotografuj osobę lub parę, która Twoim zdaniem najlepiej i najenergiczniej bawi się na parkiecie.' },
+        { id: 12, title: 'Pełne szkło, pełny stół', desc: 'Uchwyć moment, w którym wszystkie osoby przy Twoim stole jednocześnie wznoszą toast.' },
+        { id: 13, title: 'Weselny klasyk', desc: 'Zrób apetyczne zdjęcie gorącego posiłku (na przykład tradycyjnego rosołu), zanim zaczniesz jeść.' },
         { id: 14, title: 'Mistrz drugiego planu', desc: 'Tradycyjne selfie z kimś bliskim, ale musicie tak pokierować kadrem, aby w tle zepsuł je Wam (wskakując z głupią miną) zupełnie obcy gość.' },
-        { id: 15, title: 'Zaklinacze alpak', desc: 'Filmik, na którym wraz z nowo poznanym gościem próbujecie zsynchronizować Wasze ruchy głowy z ruchami żującej alpaki w zagrodzie.' },
-        { id: 16, title: 'Strażnicy Zamkowych Wrót', desc: 'Zdjęcie z gościem, z którym zrobiliście groźne miny niczym średniowieczni strażnicy, stojąc po dwóch stronach wejścia do zamku (tuż obok papug!).' },
+        { id: 15, title: 'Twój kawałek przestrzeni', desc: 'Zrób estetyczne zdjęcie swojej winietki z imieniem lub eleganckiego menu leżącego na stole.' },
+        { id: 16, title: 'Zespół w akcji', desc: 'Uchwyć na zdjęciu muzyków lub DJ-a dokładnie w momencie, gdy grają największy hit.' },
 
     ]
 };
@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
             task.media = null; 
         } else {
             if (els.upload.files.length === 0) {
-                alert('Zaraz, zaraz! Musisz załączyć zdjęcie lub wideo jako dowód.');
+                alert('Zaraz, zaraz! Musisz załączyć zdjęcie jako dowód.');
                 return;
             }
             
