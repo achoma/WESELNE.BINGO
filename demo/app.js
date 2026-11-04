@@ -24,20 +24,12 @@ const CONFIG = {
         { id: 14, title: 'Mistrz drugiego planu', desc: 'Tradycyjne selfie z kimś bliskim, ale musicie tak pokierować kadrem, aby w tle zepsuł je Wam (wskakując z głupią miną) zupełnie obcy gość.' },
         { id: 15, title: 'Zaklinacze alpak', desc: 'Filmik, na którym wraz z nowo poznanym gościem próbujecie zsynchronizować Wasze ruchy głowy z ruchami żującej alpaki w zagrodzie.' },
         { id: 16, title: 'Strażnicy Zamkowych Wrót', desc: 'Zdjęcie z gościem, z którym zrobiliście groźne miny niczym średniowieczni strażnicy, stojąc po dwóch stronach wejścia do zamku (tuż obok papug!).' },
-        { id: 17, title: 'Sojusz mięsny (lub wege)', desc: 'Fotka z osobą, z którą spotkałeś/aś się przy wiejskim stole podczas nakładania tej samej potrawy (np. ogórka kiszonego lub smalcu). Przybicie widelców mile widziane!' },
-        { id: 18, title: 'Barmański test smaku', desc: 'Zdjęcie z gościem, który polecił Ci swój ulubiony drink z baru. Na zdjęciu oboje trzymacie szklanki i robicie minę kiwających z uznaniem głową ekspertów.' },
-        { id: 19, title: 'Kofeinowe ploteczki', desc: 'Fotka z kimś, kogo zagadnąłeś/aś w kolejce do ekspresu po weselną kawę, trzymając filiżanki w geście toastu.' },
-        { id: 20, title: 'Weselny wywiad', desc: 'Zdjęcie z gościem ze stołu o numerze o 4 wyższym lub niższym od Twojego, od którego dowiedziałeś/aś się, skąd dokładnie zna Parę Młodą.' },
-        { id: 21, title: 'Wysoka piątka', desc: 'Zdjęcie w locie, na którym przybijasz spektakularną „piątkę” z kimś, mijając się w szybkim tańcu grupowym.' },
-        { id: 22, title: 'Grupowe rozpięcie', desc: 'Selfie z co najmniej trzema innymi dżentelmenami, którzy solidarnie podwinęli rękawy w koszulach do tej samej wysokości.' },
-        { id: 23, title: 'Matematyka weselna', desc: 'Odwiedź stolik, którego numer po zsumowaniu z Twoim daje liczbę 10 (np. jeśli siedzisz przy Stole 3, Twoim celem jest Stół 7). Zrób sobie grupowe selfie z całą tamtejszą ekipą w geście "zjednoczenia stołów"!' },
-        { id: 24, title: 'Wizytacja u sąsiada', desc: 'Podejdź do stolika o numerze o jeden wyższym lub niższym niż Twój, znajdź tam osobę o tym samym kolorze oczu co Ty i nagraj wideo, na którym wznosicie wspólny okrzyk: „Za Parę Młodą!”.' },
-        { id: 25, title: 'Poetycka misja u Krasickiego', desc: 'Zbierz po jednej osobie z trzech różnych stołów (muszą pokazać na palcach numery swoich stolików) i zróbcie wspólne, epickie zdjęcie pod portretem Ignacego Krasickiego jako „Sojusz Czterech Stołów”.' }
+
     ]
 };
 
 // DEV ONLY: Wypełniacz do pełnych 25 zadań w razie braków
-while(CONFIG.tasks.length < 25) {
+while(CONFIG.tasks.length < 16) {
     CONFIG.tasks.push({ id: CONFIG.tasks.length + 1, title: `Zadanie ${CONFIG.tasks.length + 1}`, desc: 'Standardowe zadanie weselne...' });
 }
 
@@ -100,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
             els.board.appendChild(tile);
         });
 
-        if(els.tasksLeft) els.tasksLeft.innerText = 25 - doneCount;
+        if(els.tasksLeft) els.tasksLeft.innerText = 16 - doneCount;
         requestAnimationFrame(() => checkBingo());
     }
 
@@ -195,11 +187,15 @@ document.addEventListener('DOMContentLoaded', () => {
         renderApp();
     });
 
-    function checkBingo() {
+function checkBingo() {
+        // ZASADA RECYKLINGU: Gotowy snippet dla siatki 4x4
         const lines = [
-            [0,1,2,3,4], [5,6,7,8,9], [10,11,12,13,14], [15,16,17,18,19], [20,21,22,23,24],
-            [0,5,10,15,20], [1,6,11,16,21], [2,7,12,17,22], [3,8,13,18,23], [4,9,14,19,24],
-            [0,6,12,18,24], [4,8,12,16,20]
+            // Poziomo
+            [0,1,2,3], [4,5,6,7], [8,9,10,11], [12,13,14,15],
+            // Pionowo
+            [0,4,8,12], [1,5,9,13], [2,6,10,14], [3,7,11,15],
+            // Skosy
+            [0,5,10,15], [3,6,9,12]
         ];
 
         for (let line of lines) {
