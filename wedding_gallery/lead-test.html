@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-book: Powrót do siebie — Anna Kitela | Kup E-book</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Lora:ital,wght@0,400;0,500;1,400&family=Montserrat:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #FDFCF9;
+            --bg-accent: #F7F2EB;
+            --text-main: #4A4A4A;
+            --brand-accent: #A78C7B;
+            --brand-hover: #8C7364;
+            --font-heading: 'Playfair Display', serif;
+            --font-body: 'Lora', serif;
+            --font-nav: 'Montserrat', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.85;
+            font-size: 17px;
+        }
+
+        /* HEADER WITHOUT DISTRACTING MENU */
+        header {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            background-color: rgba(253, 252, 249, 0.95);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(234, 222, 207, 0.6);
+            padding: 18px 0;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+        }
+
+        .logo {
+            font-family: var(--font-heading);
+            font-size: 24px;
+            color: var(--brand-accent);
+            text-decoration: none;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .logo-sub {
+            font-family: var(--font-nav);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--brand-hover);
+            display: block;
+        }
+
+        /* BUTTONS */
+        .btn-buy {
+            display: inline-block;
+            font-family: var(--font-nav);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background-color: var(--brand-accent);
+            color: #FFF;
+            padding: 18px 40px;
+            border-radius: 4px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .btn-buy:hover {
+            background-color: var(--brand-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(167, 140, 123, 0.25);
+        }
+
+        /* TYPOGRAPHY */
+        .tagline {
+            font-family: var(--font-nav);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--brand-hover);
+            margin-bottom: 12px;
+            display: block;
+            font-weight: 600;
+        }
+
+        h1 {
+            font-family: var(--font-heading);
+            font-size: 3.3rem;
+            line-height: 1.25;
+            color: var(--brand-accent);
+            margin-bottom: 15px;
+            font-weight: 400;
+        }
+
+        h2 {
+            font-family: var(--font-heading);
+            font-size: 2.4rem;
+            color: var(--brand-accent);
+            margin-bottom: 25px;
+            font-weight: 400;
+        }
+
+        h3 {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            color: var(--brand-accent);
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        /* LAYOUT & SEKCJE */
+        section {
+            padding: 100px 20px;
+            max-width: 1150px;
+            margin: 0 auto;
+        }
+
+        .full-width {
+            max-width: 100%;
+            background-color: var(--bg-accent);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 70px;
+            align-items: center;
+        }
+
+        p {
+            margin-bottom: 18px;
+        }
+
+        /* CHECKLISTS */
+        .checklist {
+            list-style: none;
+            margin: 25px 0 30px 0;
+        }
+
+        .checklist li {
+            position: relative;
+            padding-left: 32px;
+            margin-bottom: 14px;
+            font-size: 17px;
+        }
+
+        .checklist li::before {
+            content: "✔";
+            position: absolute;
+            left: 0;
+            color: var(--brand-accent);
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        /* OFFER CARD */
+        .offer-card {
+            background: #FFFFFF;
+            border: 1px solid #EADECF;
+            padding: 50px 40px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(167, 140, 123, 0.08);
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        .price-tag {
+            font-family: var(--font-heading);
+            font-size: 2.8rem;
+            color: var(--brand-accent);
+            margin: 20px 0;
+            font-weight: 500;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+
+            h2 {
+                font-size: 1.8rem;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            section {
+                padding: 60px 20px;
+            }
+
+            .offer-card {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER WITHOUT DISTRACTING NAVIGATION -->
+    <header>
+        <div class="nav-container">
+            <div>
+                <a href="#" class="logo">ANNA KITELA</a>
+                <span class="logo-sub">Wirtualny Salon Rozwoju</span>
+            </div>
+            <a href="#kup-ebook" class="btn-buy" style="padding: 12px 25px; font-size: 10px;">Kup E-book</a>
+        </div>
+    </header>
+
+    <!-- SEKCJA 1: HERO SPRZEDAŻOWE (ABOVE THE FOLD) -->
+    <section class="grid-2" style="margin-top: 20px;">
+        <div>
+            <span class="tagline">Autorski E-book PDF</span>
+            <h1>Powrót do siebie</h1>
+            <p style="font-size: 1.2rem; color: var(--brand-accent); font-weight: 500; margin-bottom: 20px;">
+                Jak wyjść z lęku, puścić kontrolę i nauczyć się ufać
+            </p>
+            <p>Są momenty w życiu, kiedy czujemy, że coś się zgubiło.</p>
+            <p>Na zewnątrz wszystko może wyglądać dobrze, a w środku pojawia się lęk, napięcie, ciągłe analizowanie,
+                potrzeba kontrologowania wszystkiego i wszystkich. Coraz trudniej usłyszeć siebie, zaufać swoim decyzjom
+                i po prostu poczuć spokój.</p>
+
+            <div style="margin-top: 35px;">
+                <a href="#kup-ebook" class="btn-buy">Zamów e-book teraz</a>
+            </div>
+        </div>
+        <div>
+            <img src="An.10.jpg" alt="E-book Powrót do siebie — Anna Kitela"
+                style="width:100%; border-radius:10px; box-shadow:0 20px 40px rgba(0,0,0,0.06);">
+        </div>
+    </section>
+
+    <!-- SEKCJA 2: O E-BOOKU & DLA KOGO JEST -->
+    <div class="full-width">
+        <section>
+            <div style="max-width: 850px; margin: 0 auto;">
+                <p
+                    style="font-size: 1.15rem; text-align: center; color: var(--brand-accent); font-style: italic; margin-bottom: 30px;">
+                    Ten e-book nie jest zbiorem gotowych recept. Jest zaproszeniem do powrotu do siebie.
+                </p>
+                <p>Krok po kroku pokazuję, jak zatrzymać się, lepiej zrozumieć swoje emocje, rozpoznać schematy, które
+                    nami kierują, i odzyskiwać wewnętrzny spokój, nawet wtedy, gdy życie nie układa się dokładnie tak,
+                    jakbyśmy chcieli.</p>
+
+                <div
+                    style="background: #FFFFFF; border: 1px solid #EADECF; padding: 45px 40px; border-radius: 8px; margin-top: 40px; box-shadow: 0 10px 30px rgba(167, 140, 123, 0.05);">
+                    <h2>Ten e-book jest dla Ciebie, jeśli:</h2>
+                    <ul class="checklist">
+                        <li>często odczuwasz lęk i niepokój,</li>
+                        <li>masz potrzebę kontrolowania wszystkiego wokół siebie,</li>
+                        <li>bierzesz na siebie zbyt dużą odpowiedzialność,</li>
+                        <li>trudno Ci zaufać życiu, sobie lub innym,</li>
+                        <li>czujesz, że bardziej żyjesz w swojej głowie niż w teraźniejszości,</li>
+                        <li>chcesz nauczyć się być przy sobie także w trudnych momentach.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- SEKCJA 3: W ŚRODKU ZNAJDZIESZ & CO MOŻESZ ZYSKAĆ -->
+    <section class="grid-2">
+        <div>
+            <h2>W środku znajdziesz:</h2>
+            <ul class="checklist">
+                <li>proste wyjaśnienie, skąd bierze się lęk i potrzeba kontroli,</li>
+                <li>ćwiczenia pomagające zatrzymać się i wrócić do kontaktu ze sobą,</li>
+                <li>pytania skłaniające do refleksji,</li>
+                <li>praktyczne wskazówki, jak budować zaufanie do siebie i życia,</li>
+                <li>inspiracje oparte na mojej własnej drodze oraz wieloletniej pracy z klientami.</li>
+            </ul>
+        </div>
+        <div
+            style="background-color: var(--bg-accent); padding: 40px; border-radius: 8px; border-left: 4px solid var(--brand-accent);">
+            <h3>Co możesz zyskać?</h3>
+            <p>Nie obiecuję życia bez trudności.</p>
+            <p>Wierzę jednak, że możesz odzyskać coś znacznie cenniejszego — spokój, który nie zależy wyłącznie od tego,
+                co dzieje się na zewnątrz.</p>
+            <p
+                style="font-style: italic; color: var(--brand-hover); margin-top: 20px; font-weight: 500; font-size: 1.05rem;">
+                Bo powrót do siebie nie polega na tym, że nagle wszystko staje się łatwe. Polega na tym, że przestajesz
+                opuszczać siebie wtedy, kiedy najbardziej siebie potrzebujesz.
+            </p>
+        </div>
+    </section>
+
+    <!-- SEKCJA 4: AUTORKA & ZAUFANIE -->
+    <div class="full-width">
+        <section class="grid-2">
+            <div>
+                <img src="An.4.jpg" alt="Anna Kitela — Coach Spełnionego Życia"
+                    style="width:100%; border-radius:8px; box-shadow:0 15px 35px rgba(0,0,0,0.04);">
+            </div>
+            <div>
+                <span class="tagline">O Autorce</span>
+                <h2>Nazywam się Anna Kitela</h2>
+                <p>Jestem coachem spełnionego życia, psychologiem oraz facylitarką pracy z podświadomością.</p>
+                <p>Wszystkie ćwiczenia i przemyślenia zawarte w tym e-booku wynikają nie tylko z mojej wiedzy
+                    psychologicznej, ale przede wszystkim z własnego doświadczenia przełomu życiowego oraz wieloletniej
+                    pracy z kobietami w gabinecie.</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- SEKCJA 5: FINALNE CTA / ZAKUP E-BOOKA -->
+    <section id="kup-ebook">
+        <div class="offer-card">
+            <span class="tagline">Zacznij zmianę już teraz</span>
+            <h2>Kup e-book „Powrót do siebie”</h2>
+            <p>Otrzymasz natychmiastowy dostęp do e-booka w formacie PDF bezpośrednio po zakupie.</p>
+
+            <div class="price-price-box">
+                <div class="price-tag">69 zł</div>
+            </div>
+
+            <a href="https://annakitela.pl/koszyk?add-to-cart=ebook" class="btn-buy"
+                style="width: 100%; display: block;">KUPUJĘ E-BOOK (KOSZYK) 🛒</a>
+
+            <p
+                style="font-size: 12px; font-family: var(--font-nav); color: #888; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px;">
+                🔒 Bezpieczna płatność | Natychmiastowa wysyłka PDF na e-mail
+            </p>
+        </div>
+    </section>
+
+    <!-- MINIMAL FOOTER -->
+    <footer
+        style="text-align: center; padding: 30px 20px; font-family: var(--font-nav); font-size: 11px; color: #888; border-top: 1px solid #EADECF;">
+        © 2026 Anna Kitela — Coach Spełnionego Życia. Wszelkie prawa zastrzeżone. | <a href="#" target="_blank"
+            style="color: #888; text-decoration: underline;">Polityka Prywatności</a> | <a href="#" target="_blank"
+            style="color: #888; text-decoration: underline;">Regulamin Sklepu</a>
+    </footer>
+
+</body>
+
+</html>
