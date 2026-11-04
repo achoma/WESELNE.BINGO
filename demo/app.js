@@ -1,22 +1,13 @@
 /**
- * WESELNE BINGO - CORE ENGINE (Vanilla JS)
- * Wersja: 1.1 (Zintegrowana baza IndexedDB dla plików wideo)
- * Architektura: SPA + LocalStorage + IndexedDB + Asynchronous Webhook
+ * WESELNE BINGO - CORE ENGINE (Vanilla JS) - WERSJA DEMO
+ * Cel: Izolowany system testowy (symulacja bazy, zero zapytań API).
  */
 
-/* =========================================
-   1. KONFIGURACJA KLIENTA (Zmieniasz tylko to!)
-   ========================================= */
 const CONFIG = {
-    // Adres Webhooka z Make.com (lub Zapier), który odbiera pliki i wrzuca na Google Drive
-    webhookUrl: "https://hook.eu1.make.com/k21v6i1je7pr3iy3zsbma6stgajlfht5", 
-    
+    // Brak webhooka Make.com - to jest odizolowane demo.
     bingoMessage: "Mamy bingo! Odbierz nagrodę u świadka przy barze!",
     
-    // Lista zadań (Docelowo 25. Uzupełnij dla konkretnej pary młodej)
     tasks: [
-        // { id: 1, title: 'Zadanie 1 ', desc: 'Treść zadania do wykonania' },
-
         { id: 1, title: 'Dworska dyplomacja', desc: 'Nagranie, na którym namawiasz innego gościa (z przeciwnej rodziny!), aby wspólnie z Tobą spróbował pogadać z zamkowymi papugami.' },
         { id: 2, title: 'Królewska sjesta', desc: 'Zdjęcie kogoś, kto ukradkiem "złapał zawieszkę" lub ucina sobie drzemkę na siedząco.' },
         { id: 3, title: 'Słodki rabuś', desc: 'Zdjęcie osoby, która nałożyła sobie na talerzyk tyle ciast ze słodkiego stołu, że ledwo mieści je w dłoniach.' },
@@ -41,24 +32,17 @@ const CONFIG = {
         { id: 22, title: 'Grupowe rozpięcie', desc: 'Selfie z co najmniej trzema innymi dżentelmenami, którzy solidarnie podwinęli rękawy w koszulach do tej samej wysokości.' },
         { id: 23, title: 'Matematyka weselna', desc: 'Odwiedź stolik, którego numer po zsumowaniu z Twoim daje liczbę 10 (np. jeśli siedzisz przy Stole 3, Twoim celem jest Stół 7). Zrób sobie grupowe selfie z całą tamtejszą ekipą w geście "zjednoczenia stołów"!' },
         { id: 24, title: 'Wizytacja u sąsiada', desc: 'Podejdź do stolika o numerze o jeden wyższym lub niższym niż Twój, znajdź tam osobę o tym samym kolorze oczu co Ty i nagraj wideo, na którym wznosicie wspólny okrzyk: „Za Parę Młodą!”.' },
-        { id: 25, title: 'Poetycka misja u Krasickiego', desc: 'Zbierz po jednej osobie z trzech różnych stołów (muszą pokazać na palcach numery swoich stolików) i zróbcie wspólne, epickie zdjęcie pod portretem Ignacego Krasickiego jako „Sojusz Czterech Stołów”.' },
-
-
-        // ... DEV HELP: Pętla poniżej automatycznie dobije do 25 na potrzeby testów.
+        { id: 25, title: 'Poetycka misja u Krasickiego', desc: 'Zbierz po jednej osobie z trzech różnych stołów (muszą pokazać na palcach numery swoich stolików) i zróbcie wspólne, epickie zdjęcie pod portretem Ignacego Krasickiego jako „Sojusz Czterech Stołów”.' }
     ]
 };
 
-// DEV ONLY: Wypełniacz do pełnych 25 zadań
+// DEV ONLY: Wypełniacz do pełnych 25 zadań w razie braków
 while(CONFIG.tasks.length < 25) {
     CONFIG.tasks.push({ id: CONFIG.tasks.length + 1, title: `Zadanie ${CONFIG.tasks.length + 1}`, desc: 'Standardowe zadanie weselne...' });
 }
 
-/* =========================================
-   2. INICJALIZACJA I ZARZĄDZANIE STANEM
-   ========================================= */
 document.addEventListener('DOMContentLoaded', () => {
     
-    // Cache'owanie DOM
     const els = {
         login: document.getElementById('login-screen'),
         app: document.getElementById('app-container'),
@@ -72,16 +56,13 @@ document.addEventListener('DOMContentLoaded', () => {
         tasksLeft: document.getElementById('tasks-left')
     };
 
-    let state = JSON.parse(localStorage.getItem('bingoState')) || null;
+    let state = JSON.parse(localStorage.getItem('demoBingoState')) || null;
     let activeIndex = null;
 
     if (state && state.name) {
         renderApp();
     }
 
-/* =========================================
-   3. LOGIKA STARTU (Logowanie i tasowanie)
-   ========================================= */
     document.getElementById('start-btn').addEventListener('click', () => {
         const nameInput = document.getElementById('name-input').value.trim();
         if (!nameInput) {
@@ -100,9 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderApp();
     });
 
-/* =========================================
-   4. RENDEROWANIE INTERFEJSU
-   ========================================= */
     function renderApp() {
         els.login.classList.add('hidden');
         els.app.classList.remove('hidden');
@@ -122,13 +100,10 @@ document.addEventListener('DOMContentLoaded', () => {
             els.board.appendChild(tile);
         });
 
-        els.tasksLeft.innerText = 25 - doneCount;
+        if(els.tasksLeft) els.tasksLeft.innerText = 25 - doneCount;
         requestAnimationFrame(() => checkBingo());
     }
 
-/* =========================================
-   5. OBSŁUGA MODALA I RENDEROWANIE PODGLĄDU
-   ========================================= */
     function openModal(index) {
         activeIndex = index;
         const task = state.board[index];
@@ -141,13 +116,9 @@ document.addEventListener('DOMContentLoaded', () => {
             els.upload.classList.add('hidden'); 
             els.preview.classList.remove('hidden'); 
             
-            // SECURITY & STABILITY: Odczyt danych z różnych źródeł (Base64 vs IndexedDB)
             if (task.media && task.media.startsWith('data:image')) {
-                // 1. Zwykłe zdjęcie
                 els.preview.innerHTML = `<img src="${task.media}" style="max-width: 100%; border-radius: var(--radius, 8px); margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" />`;
-            
             } else if (task.media && task.media.startsWith('idb:')) {
-                // 2. Odtwarzacz Wideo ładowany asynchronicznie z pamięci IndexedDB
                 const videoKey = task.media.replace('idb:', '');
                 els.preview.innerHTML = '<p style="margin-bottom:20px; color:#555;"><i>Ładowanie wideo z pamięci telefonu...</i></p>';
                 
@@ -156,14 +127,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         const vidUrl = URL.createObjectURL(blob);
                         els.preview.innerHTML = `<video src="${vidUrl}" controls playsinline style="max-width: 100%; border-radius: var(--radius, 8px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px;"></video>`;
                     } else {
-                        els.preview.innerHTML = '<p style="margin-bottom:20px; color: #d9534f;"><i>Plik wideo został usunięty przez system operacyjny (brak miejsca).</i></p>';
+                        els.preview.innerHTML = '<p style="margin-bottom:20px; color: #d9534f;"><i>Plik wideo został usunięty przez system operacyjny.</i></p>';
                     }
                 });
-
-            } else if (task.media && task.media.startsWith('blob:')) {
-                els.preview.innerHTML = '<p style="margin-bottom:20px; color: #d9534f;"><i>Stare zdjęcie testowe. Kliknij "Cofnij zadanie".</i></p>';
-            } else {
-                els.preview.innerHTML = '<p style="margin-bottom:20px; color: #555;"><i>Plik zabezpieczony na serwerze Młodych. Podgląd na żywo niedostępny.</i></p>';
             }
         } else {
             els.btnComplete.innerText = "OZNACZ JAKO WYKONANE";
@@ -178,19 +144,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     els.btnCancel.addEventListener('click', () => els.modal.close());
 
-    // Zamknięcie ekranu wygranej (overlay)
     document.getElementById('btn-close-overlay')?.addEventListener('click', () => {
         document.getElementById('bingo-overlay').classList.add('hidden');
     });
 
-/* =========================================
-   6. WYSYŁKA PLIKÓW I OBSŁUGA COFANIA
-   ========================================= */
     els.btnComplete.addEventListener('click', async () => {
         const task = state.board[activeIndex];
         
         if (task.done) {
-            // Zwalnianie pamięci z potężnych plików wideo po cofnięciu zadania
             if (task.media && task.media.startsWith('idb:')) {
                 await deleteMediaFromDB(task.media.replace('idb:', ''));
             }
@@ -203,66 +164,29 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             let file = els.upload.files[0];
-            const originalBtnText = els.btnComplete.innerText;
             const isVideo = file.type.startsWith('video/'); 
             
             els.btnComplete.disabled = true;
 
-            // 1. ZAPIS DO ODPOWIEDNIEJ BAZY DANYCH
             let localMediaRef = null;
             if (isVideo) {
-                // WIDEO omija localStorage i trafia bezpiecznie do IndexedDB
                 els.btnComplete.innerText = "PRZETWARZANIE WIDEO...";
-                const videoKey = `video_${task.id}`;
+                const videoKey = `demo_video_${task.id}`;
                 await saveMediaToDB(videoKey, file);
                 localMediaRef = `idb:${videoKey}`; 
             } else {
-                // ZDJĘCIE standardowo jako lekka miniatura w Base64
                 localMediaRef = await generateThumbnail(file);
             }
 
-            // 2. KOMPRESJA I WERYFIKACJA WAGI
             if (!isVideo) {
-                els.btnComplete.innerText = "KOMPRESOWANIE... PROSZĘ CZEKAĆ";
-                file = await compressImage(file, 1920, 0.8); 
-            } else if (file.size > 50 * 1024 * 1024) {
-                alert("Ten film jest za duży! Maksymalny dopuszczalny rozmiar to 50MB.");
-                await deleteMediaFromDB(`video_${task.id}`); // Sprzątamy zablokowany film
-                els.btnComplete.disabled = false;
-                els.btnComplete.innerText = originalBtnText;
-                return; 
+                els.btnComplete.innerText = "SYMULACJA WYSYŁANIA...";
             }
             
-            els.btnComplete.innerText = "WYSYŁANIE... PROSZĘ CZEKAĆ";
-
-            // 3. WYSYŁKA DO WEBHOOKA
-            try {
-                const formData = new FormData();
-                formData.append("file", file);
-                formData.append("guest_name", state.name);
-                formData.append("task_title", task.title);
-                formData.append("task_id", task.id);
-
-                const response = await fetch(CONFIG.webhookUrl, {
-                    method: "POST",
-                    body: formData
-                });
-
-                if (response.ok) {
-                    task.done = true;
-                    task.media = localMediaRef; 
-                } else {
-                    throw new Error("Odmowa serwera");
-                }
-            } catch (error) {
-                console.error("Upload error:", error);
-                alert("Nie udało się wysłać pliku. Sprawdź połączenie z internetem lub spróbuj mniejszy plik.");
-                if (isVideo) await deleteMediaFromDB(`video_${task.id}`); // Sprzątamy na wypadek błędu sieci
-                els.btnComplete.innerText = originalBtnText;
-                els.btnComplete.disabled = false;
-                return; 
-            }
-
+            // SYMULACJA DEMO (Bez uderzania na webhooka, ratujemy transfer)
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            task.done = true;
+            task.media = localMediaRef;
+            
             els.btnComplete.disabled = false;
         }
 
@@ -271,9 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderApp();
     });
 
-/* =========================================
-   7. SILNIK BINGO (Matematyka planszy)
-   ========================================= */
     function checkBingo() {
         const lines = [
             [0,1,2,3,4], [5,6,7,8,9], [10,11,12,13,14], [15,16,17,18,19], [20,21,22,23,24],
@@ -283,12 +204,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         for (let line of lines) {
             if (line.every(index => state.board[index].done)) {
-                if (!localStorage.getItem('bingoWon')) {
-                    // DEV: Podpinamy natywny DOM zamiast systemowego alertu
+                if (!localStorage.getItem('demoBingoWon')) {
                     setTimeout(() => {
                         document.getElementById('bingo-overlay').classList.remove('hidden');
                     }, 200); 
-                    localStorage.setItem('bingoWon', 'true');
+                    localStorage.setItem('demoBingoWon', 'true');
                 }
                 return; 
             }
@@ -296,17 +216,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveState() {
-        localStorage.setItem('bingoState', JSON.stringify(state));
+        localStorage.setItem('demoBingoState', JSON.stringify(state));
     }
 
-/* =========================================
-   8. SNIPPETY NARZĘDZIOWE (Kompresja, Miniatury, IndexedDB)
-   ========================================= */
-    
-    // --- INDEXED-DB (Obsługa ciężkich plików offline) ---
+    // --- Narzędzia Bazy Danych ---
     const initDB = () => {
         return new Promise((resolve, reject) => {
-            const request = indexedDB.open('BingoDB', 1);
+            const request = indexedDB.open('DemoBingoDB', 1);
             request.onupgradeneeded = (e) => e.target.result.createObjectStore('mediaStore');
             request.onsuccess = () => resolve(request.result);
             request.onerror = () => reject('Błąd bazy IndexedDB');
@@ -338,35 +254,6 @@ document.addEventListener('DOMContentLoaded', () => {
         tx.objectStore('mediaStore').delete(key);
     };
 
-    // --- KOMPRESJA I MINIATURY ---
-    const compressImage = (file, maxWidth = 1920, quality = 0.8) => {
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file); 
-            
-            reader.onload = (event) => {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas'); 
-                    let width = img.width;
-                    let height = img.height;
-                    if (width > maxWidth) {
-                        height = Math.round((height * maxWidth) / width);
-                        width = maxWidth;
-                    }
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height); 
-                    canvas.toBlob((blob) => {
-                        resolve(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() })); 
-                    }, 'image/jpeg', quality); 
-                };
-            };
-        });
-    };
-
     const generateThumbnail = (file) => {
         return new Promise((resolve) => {
             const objectUrl = URL.createObjectURL(file);
@@ -393,12 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-/* =========================================
-   9. UKRYTY "KILL SWITCH" (Reset Aplikacji)
-   ========================================= */
-    // Ścieżka ratunkowa: 5 szybkich tapnięć w główne logo czyści bazę (LocalStorage + IndexedDB).
-    // Snippet do recyklingu przy każdej kolejnej aplikacji PWA.
-    
+    // --- UKRYTY "KILL SWITCH" (Reset Aplikacji DEMO) ---
     let clickCount = 0;
     let clickTimer = null;
     const mainLogo = document.querySelector('.main-logo');
@@ -406,36 +288,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (mainLogo) {
         mainLogo.addEventListener('click', () => {
             clickCount++;
-            
-            // Resetuj licznik kliknięć po 2 sekundach bezczynności
             if (clickTimer) clearTimeout(clickTimer);
             clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
 
-            // Jeśli kliknięto 5 razy z rzędu
             if (clickCount >= 5) {
-                const confirmReset = confirm("TRYB SERWISOWY: Czy na pewno chcesz całkowicie zresetować grę i usunąć postępy?");
-                
+                const confirmReset = confirm("TRYB SERWISOWY: Zresetować pamięć wersji Demo?");
                 if (confirmReset) {
-                    // 1. Czyszczenie lekkich danych z LocalStorage
-                    localStorage.removeItem('bingoState');
-                    localStorage.removeItem('bingoWon');
-                    
-                    // 2. Czyszczenie ciężkich plików wideo z IndexedDB
-                    const req = indexedDB.deleteDatabase('BingoDB');
-                    
-                    req.onsuccess = () => {
-                        alert("Pamięć wyczyszczona. Aplikacja gotowa do nowej gry.");
-                        window.location.reload(); // Twardy reset widoku
-                    };
-                    
-                    req.onerror = () => {
-                        alert("Błąd: Nie udało się wyczyścić pamięci IndexedDB.");
-                    };
+                    localStorage.removeItem('demoBingoState');
+                    localStorage.removeItem('demoBingoWon');
+                    const req = indexedDB.deleteDatabase('DemoBingoDB');
+                    req.onsuccess = () => { window.location.reload(); };
                 }
-                clickCount = 0; // Wyzerowanie po akcji
+                clickCount = 0;
             }
         });
     }
-
-
 });

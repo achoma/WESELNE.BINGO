@@ -4,23 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <!-- OPEN GRAPH (Podgląd linku w Messenger/WhatsApp/Facebook) -->
     <meta property="og:title" content="Weselne Bingo - Podejmij Wyzwanie!">
     <meta property="og:description"
         content="Zagrajmy! Realizuj zadania, zbieraj dowody i baw się razem z nami. Kliknij i dołącz do gry.">
-    <meta property="og:image" content="https://weselne.bingo/images/weselne.bingo.png">
-    <meta property="og:url" content="https://weselne.bingo/magda_i_dawid">
+    <meta property="og:image" content="https://weselne.bingo/demo/images/weselne.bingo.png">
+    <meta property="og:url" content="https://weselne.bingo/demo/">
     <meta property="og:type" content="website">
-    <!-- FAVICON & PWA ICONS (Snippet do recyklingu) -->
-    <!-- Standardowa ikona dla przeglądarek (zakładki na PC) -->
+
+    <!-- FAVICON & PWA ICONS -->
     <link rel="icon" type="image/png" href="images/favicon.png">
-    
-    <!-- Ikona dla iOS (ekran główny iPhone'a) -->
     <link rel="apple-touch-icon" href="images/favicon.png">
-    
-    <!-- Kolor paska przeglądarki na mobile (dopasowany do tła aplikacji) -->
     <meta name="theme-color" content="#F8F7F4">
-    <title>Weselne Bingo</title>
+
+    <title>Weselne Bingo - Wersja DEMO</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -32,35 +30,41 @@
     <!-- STREFA 1: Ekran Logowania -->
     <section id="login-screen">
         <h2>Gotów na Zamkowe Bingo – Podejmij Wyzwanie!</h2>
-        <p>Wpisz swoje imię (lub kryptonim) i ruszaj na weselne łowy!<br>Twój cel to pełna linia (5 pól w pionie, poziomie
-            lub skosie).</p>
+        <p>Wpisz swoje imię (lub kryptonim) i ruszaj na weselne łowy!<br>Twój cel to pełna linia (5 pól w pionie,
+            poziomie lub skosie).</p>
         <input type="text" id="name-input" placeholder="Wpisz swoje imię(lub kryptonim) ...">
         <button id="start-btn" class="btn-primary">ZACZYNAM GRĘ</button>
     </section>
 
     <!-- STREFA 2: Główna aplikacja (domyślnie ukryta klasą .hidden) -->
     <main id="app-container" class="hidden">
-<header>
-    <div class="user-stats">
-        Cześć <span id="player-name"></span>!<br>
-        Rozglądaj się uważnie, zaznaczaj trafienia i baw się dobrze!
-        <!-- Bezpiecznik dla JS (Anti-Bloatware) - ukryty, by nie psuć designu -->
-        <span id="tasks-left" style="display: none;"></span>
-    </div>
-</header>
+        <header>
+            <div class="user-stats">
+                Cześć <span id="player-name"></span>!<br>
+                Rozglądaj się uważnie, zaznaczaj trafienia i baw się dobrze!
+                <!-- Bezpiecznik dla JS (Anti-Bloatware) -->
+                <span id="tasks-left" style="display: none;"></span>
+            </div>
+        </header>
 
         <!-- Pusty kontener - siatkę wygeneruje nam JS -->
         <section id="bingo-board" class="grid"></section>
+
+        <!-- Informacja o wersji DEMO (Bezpieczeństwo danych) -->
+
+<p class="demo-rools">Twój cel to pełna linia <br>(5 pól w pionie, poziomie lub skosie)</p>
+
+        <p class="demo-notice">To jest wersja DEMO aplikacji.<br>Zdjęcia i filmy nie są nigdzie zapisywane.</p>
     </main>
 
-    <!-- STREFA 3: Modal (Natywny tag dialog - super wydajny i bezpieczny) -->
+    <!-- STREFA 3: Modal (Natywny tag dialog - super wydajny) -->
     <dialog id="task-modal">
         <div class="modal-inner">
             <h2 id="modal-title">Tytuł Zadania</h2>
             <p id="modal-desc">Opis zadania...</p>
 
-    <!-- Natywny wybór OS: Smartfon sam pokaże menu wyboru (Aparat vs Galeria) -->
-    <input type="file" id="media-upload" accept="image/*,video/*">
+            <!-- Natywny wybór OS: Smartfon sam pokaże menu wyboru (Aparat vs Galeria) -->
+            <input type="file" id="media-upload" accept="image/*,video/*">
 
             <!-- Miejsce na podgląd zdjęcia/filmu dla już zrobionych zadań -->
             <div id="media-preview" class="hidden"></div>
@@ -69,6 +73,7 @@
             <button id="btn-cancel" class="btn-secondary">WRACAM DO ZABAWY (ANULUJ)</button>
         </div>
     </dialog>
+
     <!-- STREFA 4: Ekran Zwycięstwa -->
     <div id="bingo-overlay" class="hidden">
         <div class="overlay-content"
@@ -76,15 +81,16 @@
             <h1
                 style="color:var(--brand-red, #8B1A1A); font-size: 2.5rem; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 3px;">
                 BINGO</h1>
-            <h2 style="color: var(--brand-gold, #BCA37D); font-size: 1.5rem; margin-bottom: 20px;">Gra o tron wygrana!</h2>
+            <h2 style="color: var(--brand-gold, #BCA37D); font-size: 1.5rem; margin-bottom: 20px;">Gra o tron wygrana!
+            </h2>
             <p id="bingo-msg" style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 25px;">Królewskie trofeum jest
-                Twoje!<br>Leć szybko do
-                Świadka z telefonem pełnym fotodowodów, krzyknij głośno "BINGO!"</p>
+                Twoje!<br>Leć szybko do Świadka z telefonem pełnym fotodowodów, krzyknij głośno "BINGO!"</p>
 
-            <!-- Nowy przycisk powrotu do planszy -->
+            <!-- Przycisk powrotu do planszy -->
             <button id="btn-close-overlay" class="btn-primary">WRACAM DO PLANSZY</button>
         </div>
     </div>
+
     <script src="app.js"></script>
 </body>
 

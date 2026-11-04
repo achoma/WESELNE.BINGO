@@ -1,25 +1,18 @@
 /* =========================================
-   WESELNE BINGO - DESIGN SYSTEM V1
+   WESELNE BINGO - DESIGN SYSTEM V1 (DEMO)
    ========================================= */
 
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap');
 
-/* 1. ZMIENNE (Edytuj to przy kolejnych zleceniach) */
 :root {
     --bg-color: #F8F7F4;
-    /* Jasne tło aplikacji */
     --brand-gold: #BFA175;
-    /* Kolor bazowy (złoty/beżowy) */
     --brand-red: #5C1322;
-    /* Kolor akcentu / hover / zrobione zadanie */
     --text-dark: #23070C;
-    /* Kolor tekstu */
     --radius: 0px;
-    /* Kwadratowe kafelki jak w projekcie */
     --font-main: 'Montserrat', sans-serif;
 }
 
-/* 2. RESET I BAZA */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -37,14 +30,12 @@ body {
     padding: 20px 20px 60px 20px;
 }
 
-/* 3. LOGO */
 .main-logo {
     max-width: 140px;
     margin: 20px auto 40px auto;
     display: block;
 }
 
-/* 4. EKRAN LOGOWANIA (Strefa 1) */
 #login-screen {
     max-width: 500px;
     width: 100%;
@@ -95,12 +86,10 @@ input[type="text"]::placeholder {
     transition: background-color 0.3s ease;
 }
 
-/* Zgodnie z wytycznymi - hover w kolorze zrealizowanego zadania */
 .btn-primary:hover {
     background-color: var(--brand-red);
 }
 
-/* 5. GŁÓWNA APLIKACJA (Strefa 2) */
 #app-container,
 #app-screen {
     max-width: 500px;
@@ -122,20 +111,16 @@ header {
     line-height: 1.5;
 }
 
-/* 6. SIATKA BINGO (Grid) */
 .grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 8px;
-    /* Odstępy między kafelkami */
     width: 100%;
 }
 
-/* Kafelki bazowe */
 .tile {
     aspect-ratio: 1/1;
     background-color: var(--brand-gold);
-    /* Magia Anti-Bloatware: ukrywamy numerek z JS i wstawiamy ikonkę SVG w CSS */
     color: transparent;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 2l1.5 8.5L22 12l-8.5 1.5L12 22l-1.5-8.5L2 12l8.5-1.5z'/%3E%3C/svg%3E");
     background-size: 45%;
@@ -145,20 +130,16 @@ header {
     transition: transform 0.1s ease-in-out, background-color 0.3s ease;
 }
 
-/* Efekt kliknięcia na smartfonie */
 .tile:active {
     transform: scale(0.92);
 }
 
-/* Kafelki wykonane (Zadanie zrobione) */
 .tile.done {
     background-color: var(--brand-red);
-    /* Zmiana ikonki na ptaszka w kółku */
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M8 12l3 3 5-6'/%3E%3C/svg%3E");
     background-size: 65%;
 }
 
-/* 7. MODAL (Strefa 3 i 4) */
 dialog {
     margin: auto;
     border: 2px solid var(--brand-gold);
@@ -174,7 +155,6 @@ dialog {
 dialog::backdrop {
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(3px);
-    /* Eleganckie rozmycie tła */
 }
 
 #modal-title {
@@ -213,7 +193,6 @@ input[type="file"] {
     background-color: var(--bg-color);
 }
 
-/* 8. EKRAN WYGRANEJ (BINGO OVERLAY) */
 #bingo-overlay {
     position: fixed;
     top: 0;
@@ -226,4 +205,27 @@ input[type="file"] {
     align-items: center;
     justify-content: center;
     z-index: 9999;
+}
+
+/* WERSJA DEMO - KOMUNIKAT */
+.demo-notice {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--brand-gold);
+    margin-top: 30px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    line-height: 1.5;
+}
+
+.demo-rools {
+    text-align: center;
+    /* font-size: 0.85rem; */
+    /* color: var(--brand-red); */
+    margin-top: 30px;
+    /* font-weight: 600; */
+    letter-spacing: 1px;
+    /* text-transform: uppercase; */
+    line-height: 1.5;
 }
