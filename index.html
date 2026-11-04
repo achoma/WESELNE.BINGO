@@ -11,6 +11,12 @@
             --bg-color: #fdfbf7;
             --text-color: #c99999;
             --font-main: 'Helvetica Neue', Arial, sans-serif;
+            --bg-color: #FAFAF8;
+            --text-main: #333333;
+            --text-light: #666666;
+            --accent-pink: #C29B9B;
+            --button-pink: #c99999;
+            --button-hover: #926a6a;
         }
 
         * {
@@ -45,7 +51,7 @@
         }
 
         .logo-wrapper img {
-            max-width: 380px;
+            max-width: 280px;
             height: auto;
             display: inline-block;
         }
@@ -67,6 +73,39 @@
         }
         span{
             font-size: 1.1rem;
+            font-weight: 500;
+        }
+        .description {
+            font-size: 1rem;
+            line-height: 1.8;
+            font-weight: 300;
+            margin-bottom: 40px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: var(--button-pink);
+            color: #FFFFFF;
+            text-decoration: none;
+            padding: 15px 35px;
+            border-radius: 30px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            margin-bottom: 40px;
+        }
+
+        .cta-button:hover {
+            background-color: var(--button-hover);
+            transform: translateY(-2px);
+        }
+
+        .footer-note {
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            color: var(--accent-pink);
             font-weight: 500;
         }
 
@@ -94,7 +133,11 @@
             .logo-wrapper img {
                 max-width: 180px;
             }
+            .description {
+                font-size: 0.9rem;
+            }
         }
+
     </style>
 </head>
 
@@ -107,11 +150,17 @@
         </div>
 
         <h1>Premiera wkrótce</h1>
-    <p>Cyfrowa alternatywa dla tradycyjnych zabaw. </p>
-    <p>
-        Subtelna integracja, nowoczesny design i zero kompromisów. </p><p>Tworzymy interaktywne gry online dla najbardziej
-    wymagających gości. </p><br>
-    <span><b>Trwają prace deweloperskie.</b></span>
+<div class="description">
+    <p>Cyfrowa alternatywa dla tradycyjnych zabaw.</p>
+    <p>Subtelna integracja, nowoczesny design i zero kompromisów.</p>
+    <p>Tworzymy interaktywne gry online dla najbardziej wymagających gości.</p>
+</div>
+
+<a href="/demo/index.html" class="cta-button">Przetestuj Demo</a>
+
+<div class="footer-note">
+    <p>Trwają prace deweloperskie.</p>
+</div>
     </main>
 
 </body>
